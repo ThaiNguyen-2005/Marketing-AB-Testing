@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing A/B Testing Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-fontawesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="logo-text">A/B Testing<span>Pulse</span></div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#overview" class="nav-item active"><i class="fa-solid fa-house"></i> Tổng quan KPI</a>
+                <a href="#trends" class="nav-item"><i class="fa-solid fa-timeline"></i> Xu hướng hàng ngày</a>
+                <a href="#funnel" class="nav-item"><i class="fa-solid fa-filter"></i> Phễu chuyển đổi</a>
+                <a href="#statistics" class="nav-item"><i class="fa-solid fa-calculator"></i> Kiểm định Welch t-test</a>
+                <a href="#bootstrap" class="nav-item"><i class="fa-solid fa-rotate"></i> Bootstrap Simulator</a>
+                <a href="#hypotheses" class="nav-item"><i class="fa-solid fa-clipboard-question"></i> Đối chiếu giả thuyết</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar"><i class="fa-solid fa-user-tie"></i></div>
+                    <div class="details">
+                        <span class="name">Thống kê viên</span>
+                        <span class="role">Data Analyst</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1>Phân tích chiến dịch Marketing A/B Testing</h1>
+                    <p>Hệ thống đánh giá hiệu suất quảng cáo & Kiểm định thống kê tự động</p>
+                </div>
+                <div class="header-actions">
+                    <span class="badge badge-control"><i class="fa-solid fa-circle-info"></i> Control: 29 ngày</span>
+                    <span class="badge badge-test"><i class="fa-solid fa-bolt"></i> Test: 30 ngày</span>
+                </div>
+            </header>
+
+            <!-- Section 1: Overview -->
+            <section id="overview" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-table-columns"></i> Tổng quan hiệu suất tổng thể</h2>
+                    <p>So sánh các chỉ số trung bình ngày giữa hai nhóm chiến dịch Control và Test</p>
+                </div>
+
+                <!-- KPI Cards Grid -->
+                <div class="kpi-grid">
+                    <div class="kpi-card" data-metric="spend_usd">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Chi phí quảng cáo (Daily Spend)</span>
+                            <span class="kpi-icon"><i class="fa-solid fa-wallet"></i></span>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-values">
+                                <div class="val-group">
+                                    <span class="lbl">Control</span>
+                                    <span class="val" id="overview-c-spend">$2,304</span>
+                                </div>
+                                <div class="val-group">
+                                    <span class="lbl">Test</span>
+                                    <span class="val" id="overview-t-spend">$2,563</span>
+                                </div>
+                            </div>
+                            <div class="kpi-trend trend-up" id="trend-spend">
+                                <i class="fa-solid fa-caret-up"></i> +11.24%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" data-metric="impressions">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Lượt hiển thị (Impressions)</span>
+                            <span class="kpi-icon"><i class="fa-solid fa-eye"></i></span>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-values">
+                                <div class="val-group">
+                                    <span class="lbl">Control</span>
+                                    <span class="val" id="overview-c-impressions">120K</span>
+                                </div>
+                                <div class="val-group">
+                                    <span class="lbl">Test</span>
+                                    <span class="val" id="overview-t-impressions">74K</span>
+                                </div>
+                            </div>
+                            <div class="kpi-trend trend-down" id="trend-impressions">
+                                <i class="fa-solid fa-caret-down"></i> -38.25%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" data-metric="website_clicks">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Lượt click website (Clicks)</span>
+                            <span class="kpi-icon"><i class="fa-solid fa-arrow-pointer"></i></span>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-values">
+                                <div class="val-group">
+                                    <span class="lbl">Control</span>
+                                    <span class="val" id="overview-c-clicks">5,320</span>
+                                </div>
+                                <div class="val-group">
+                                    <span class="lbl">Test</span>
+                                    <span class="val" id="overview-t-clicks">6,032</span>
+                                </div>
+                            </div>
+                            <div class="kpi-trend trend-up" id="trend-clicks">
+                                <i class="fa-solid fa-caret-up"></i> +13.38%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card" data-metric="purchase">
+                        <div class="kpi-header">
+                            <span class="kpi-title">Lượt đơn hàng (Purchases)</span>
+                            <span class="kpi-icon"><i class="fa-solid fa-cart-shopping"></i></span>
+                        </div>
+                        <div class="kpi-body">
+                            <div class="kpi-values">
+                                <div class="val-group">
+                                    <span class="lbl">Control</span>
+                                    <span class="val" id="overview-c-purchase">522.8</span>
+                                </div>
+                                <div class="val-group">
+                                    <span class="lbl">Test</span>
+                                    <span class="val" id="overview-t-purchase">521.2</span>
+                                </div>
+                            </div>
+                            <div class="kpi-trend trend-stable" id="trend-purchase">
+                                <i class="fa-solid fa-minus"></i> -0.30%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Insights Section -->
+                <div class="dashboard-card main-insight-card">
+                    <div class="card-title"><i class="fa-solid fa-lightbulb"></i> Nhận xét nhanh (Quick Insights)</div>
+                    <div class="card-body">
+                        <ul>
+                            <li><strong>Hiệu quả chi phí thấp hơn:</strong> Nhóm <strong>Test</strong> có chi phí trung bình hàng ngày tăng <strong>11.24%</strong> so với <strong>Control</strong>, nhưng lượng đơn hàng (purchase) trung bình hàng ngày lại giảm nhẹ <strong>-0.30%</strong>.</li>
+                            <li><strong>Phân phối thầu thông minh hơn:</strong> Nhóm <strong>Control</strong> hiển thị rộng hơn (impressions lớn hơn), nhưng nhóm <strong>Test</strong> đạt tỷ lệ click (CTR) cao hơn, cho thấy cơ chế bidding tự động của Test hướng đến đối tượng ngách có tương tác ban đầu cao.</li>
+                            <li><strong>Giai đoạn cuối phễu kém hiệu quả:</strong> Dù Test thu hút lượt click và tìm kiếm nhiều hơn, tỷ lệ chuyển đổi từ giỏ hàng sang đơn hàng (Cart-to-Purchase) của Test giảm mạnh so với Control.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 2: Daily Trends -->
+            <section id="trends" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-timeline"></i> Xu hướng hàng ngày (Time-Series)</h2>
+                    <p>Biểu diễn sự biến động và phân phối của các chỉ số chiến dịch quảng cáo qua 30 ngày</p>
+                </div>
+
+                <div class="card-row">
+                    <div class="dashboard-card flex-2">
+                        <div class="card-header-actions">
+                            <div class="card-title"><i class="fa-solid fa-chart-line"></i> Biểu đồ biến động theo ngày</div>
+                            <div class="select-wrapper">
+                                <select id="metric-select" class="custom-select">
+                                    <option value="purchase">Lượt đơn hàng (Purchases)</option>
+                                    <option value="spend_usd">Chi phí (Daily Spend USD)</option>
+                                    <option value="website_clicks">Lượt click website (Clicks)</option>
+                                    <option value="impressions">Lượt hiển thị (Impressions)</option>
+                                    <option value="ctr">Tỷ lệ Click (CTR %)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="timeSeriesChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-row margin-top">
+                    <div class="dashboard-card flex-1">
+                        <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Phân phối dữ liệu (Boxplot Visual)</div>
+                        <div class="chart-container">
+                            <canvas id="boxplotChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="dashboard-card flex-1">
+                        <div class="card-title"><i class="fa-solid fa-circle-nodes"></i> Tương quan Spend vs Purchases</div>
+                        <div class="chart-container">
+                            <canvas id="scatterChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Funnel -->
+            <section id="funnel" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-filter"></i> Phễu chuyển đổi (Conversion Funnel)</h2>
+                    <p>Đánh giá tỷ lệ rơi rớt qua các giai đoạn: Impressions → Clicks → Searches → View Content → Add to Cart → Purchase</p>
+                </div>
+
+                <div class="card-row">
+                    <div class="dashboard-card flex-2">
+                        <div class="card-title"><i class="fa-solid fa-filter-list"></i> Phễu chuyển đổi luỹ kế (Tỷ lệ % trên thang Log)</div>
+                        <div class="chart-container">
+                            <canvas id="funnelChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-row margin-top">
+                    <div class="dashboard-card flex-1">
+                        <div class="card-title"><i class="fa-solid fa-arrow-down-short-wide"></i> Chi tiết tỷ lệ chuyển đổi từng bước (Step-by-Step)</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="custom-table" id="funnel-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Giai đoạn phễu</th>
+                                            <th>Control %</th>
+                                            <th>Test %</th>
+                                            <th>So sánh</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Will be filled by js -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card flex-1">
+                        <div class="card-title"><i class="fa-solid fa-magnifying-glass-chart"></i> Phân tích hành vi phễu</div>
+                        <div class="card-body">
+                            <p class="funnel-text">
+                                <strong>1. Impressions → Clicks (Tỷ lệ CTR):</strong> Nhóm Test (<strong>8.09%</strong>) cao hơn nhóm Control (<strong>7.01%</strong>), cho thấy định dạng quảng cáo Test hấp dẫn hơn ở bước đầu hiển thị.
+                            </p>
+                            <p class="funnel-text margin-top-sm">
+                                <strong>2. Clicks → Searches:</strong> Người dùng Test chuyển đổi sang hành động Tìm kiếm rất tốt (<strong>39.51%</strong>) so với Control (<strong>29.74%</strong>).
+                            </p>
+                            <p class="funnel-text margin-top-sm">
+                                <strong>3. Add to Cart → Purchase (Đơn hàng):</strong> Điểm nghẽn nghiêm trọng nhất của nhóm Test nằm ở đây. Chỉ có <strong>51.81%</strong> lượt thêm giỏ hàng chuyển thành đơn hàng, trong khi Control đạt tới <strong>59.13%</strong>. Điều này giải thích tại sao Test click nhiều nhưng đơn hàng cuối cùng lại không tăng.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Statistics -->
+            <section id="statistics" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-calculator"></i> Phân tích thống kê & Kiểm định Welch's t-test</h2>
+                    <p>Kiểm tra xem sự khác biệt giữa hai chiến dịch có ý nghĩa thực sự hay do ngẫu nhiên</p>
+                </div>
+
+                <div class="card-row">
+                    <div class="dashboard-card flex-2">
+                        <div class="card-title"><i class="fa-solid fa-sliders"></i> Cài đặt tham số kiểm định</div>
+                        <div class="card-body controls-row">
+                            <div class="control-group-input">
+                                <label for="stat-metric-select">Chỉ số kiểm định:</label>
+                                <select id="stat-metric-select" class="custom-select">
+                                    <option value="purchase">Lượt đơn hàng (Purchases)</option>
+                                    <option value="spend_usd">Chi phí (Daily Spend USD)</option>
+                                    <option value="website_clicks">Lượt click website (Clicks)</option>
+                                    <option value="impressions">Lượt hiển thị (Impressions)</option>
+                                </select>
+                            </div>
+                            <div class="control-group-input">
+                                <label for="alpha-select">Mức ý nghĩa (&alpha;):</label>
+                                <select id="alpha-select" class="custom-select">
+                                    <option value="0.01">0.01 (Độ tin cậy 99%)</option>
+                                    <option value="0.05" selected>0.05 (Độ tin cậy 95%)</option>
+                                    <option value="0.10">0.10 (Độ tin cậy 90%)</option>
+                                </select>
+                            </div>
+                            <div class="control-group-input btn-align">
+                                <button id="run-test-btn" class="primary-btn"><i class="fa-solid fa-play"></i> Chạy kiểm định</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Output Cards -->
+                <div class="card-row margin-top">
+                    <!-- Welch t-test results -->
+                    <div class="dashboard-card flex-1">
+                        <div class="card-title"><i class="fa-solid fa-square-poll-vertical"></i> Kết quả Welch's t-test</div>
+                        <div class="card-body stat-results-body">
+                            <div class="stat-row">
+                                <span class="lbl">T-Statistic:</span>
+                                <span class="val bold" id="stat-t-value">0.0000</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="lbl">P-Value:</span>
+                                <span class="val bold" id="stat-p-value">0.0000</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="lbl">Bác bỏ giả thuyết không (H₀)?</span>
+                                <span class="val badge" id="stat-reject-badge">Đang tải...</span>
+                            </div>
+                            <hr class="card-divider">
+                            <div class="stat-verdict" id="stat-verdict-text">
+                                Đang tính toán...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confidence Intervals & Effect size -->
+                    <div class="dashboard-card flex-1">
+                        <div class="card-title"><i class="fa-solid fa-ruler-horizontal"></i> Kích thước hiệu ứng & Khoảng tin cậy</div>
+                        <div class="card-body stat-results-body">
+                            <div class="stat-row">
+                                <span class="lbl">Control Mean:</span>
+                                <span class="val" id="stat-c-mean">0.00</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="lbl">Test Mean:</span>
+                                <span class="val" id="stat-t-mean">0.00</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="lbl">Hiệu số trung bình:</span>
+                                <span class="val bold" id="stat-diff-mean">0.00</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="lbl">95% CI của Hiệu số:</span>
+                                <span class="val bold" id="stat-ci-diff">[0.00, 0.00]</span>
+                            </div>
+                            <hr class="card-divider">
+                            <div class="stat-row">
+                                <span class="lbl">Cohen's d (Effect Size):</span>
+                                <span class="val bold" id="stat-cohen">0.00</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="lbl">Mức độ ảnh hưởng:</span>
+                                <span class="val badge badge-neutral" id="stat-cohen-interpret">Negligible</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multicollinearity (VIF) and Regression Info -->
+                <div class="dashboard-card margin-top">
+                    <div class="card-title"><i class="fa-solid fa-circle-exclamation"></i> Phân tích đa cộng tuyến (VIF) & Cảnh báo Mô hình Hồi quy</div>
+                    <div class="card-body vif-container">
+                        <div class="vif-text">
+                            <p>Khi xây dựng mô hình hồi quy đa biến để dự báo lượt mua hàng (purchases), chúng ta ghi nhận sự tồn tại của **Đa cộng tuyến (Multicollinearity)** nghiêm trọng:</p>
+                            <ul>
+                                <li><strong>`add_to_cart` (VIF &gt; 12.0)</strong> và <strong>`searches` (VIF &gt; 9.0)</strong> tương quan rất mạnh với nhau.</li>
+                                <li><strong>Hệ quả:</strong> Làm tăng sai số chuẩn của hệ số hồi quy, khiến việc phân tích tầm quan trọng độc lập của hai biến này trở nên kém chính xác. Các mô hình Random Forest ở notebook 07 cũng cho thấy `reach` và `impressions` là các nhân tố phân tách rõ rệt nhất giữa hai chiến dịch Control vs Test.</li>
+                            </ul>
+                        </div>
+                        <div class="vif-table-area">
+                            <table class="custom-table smaller-table">
+                                <thead>
+                                    <tr>
+                                        <th>Biến độc lập</th>
+                                        <th>VIF</th>
+                                        <th>Tình trạng</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>add_to_cart</td>
+                                        <td class="vif-val-high">12.45</td>
+                                        <td>Đa cộng tuyến nghiêm trọng</td>
+                                    </tr>
+                                    <tr>
+                                        <td>searches</td>
+                                        <td class="vif-val-high">9.12</td>
+                                        <td>Có dấu hiệu đa cộng tuyến</td>
+                                    </tr>
+                                    <tr>
+                                        <td>spend_usd</td>
+                                        <td>1.85</td>
+                                        <td>An toàn</td>
+                                    </tr>
+                                    <tr>
+                                        <td>website_clicks</td>
+                                        <td>2.45</td>
+                                        <td>An toàn</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: Bootstrap Simulator -->
+            <section id="bootstrap" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-rotate"></i> Trình mô phỏng Tái mẫu Bootstrap (Bootstrap Simulator)</h2>
+                    <p>Chạy mô phỏng phi tham số 1,000 lần trực tiếp trên trình duyệt để đánh giá phân phối khoảng tin cậy của Đơn hàng (Purchases)</p>
+                </div>
+
+                <div class="card-row">
+                    <div class="dashboard-card flex-2">
+                        <div class="card-title"><i class="fa-solid fa-gamepad"></i> Điều khiển mô phỏng</div>
+                        <div class="card-body controls-row">
+                            <div class="simulator-intro">
+                                <p>Nhấn nút bên cạnh để chạy thuật toán Bootstrap. Trình duyệt sẽ lấy ngẫu nhiên 1,000 mẫu (có thay thế) cho cả hai nhóm Control và Test để dựng phân phối trung bình mẫu và hiệu số trung bình.</p>
+                            </div>
+                            <div class="btn-align">
+                                <button id="run-bootstrap-btn" class="primary-btn glow-btn"><i class="fa-solid fa-play"></i> Bắt đầu mô phỏng</button>
+                            </div>
+                        </div>
+                        <!-- Progress bar -->
+                        <div class="progress-container" id="progress-container" style="display: none;">
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                            </div>
+                            <span class="progress-percent" id="progress-percent">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Simulation charts -->
+                <div id="bootstrap-results-area" style="opacity: 0.1; pointer-events: none; transition: opacity 0.5s;">
+                    <div class="card-row margin-top">
+                        <div class="dashboard-card flex-1">
+                            <div class="card-title"><i class="fa-solid fa-chart-area"></i> Phân phối Bootstrap của Trung bình hai nhóm</div>
+                            <div class="chart-container">
+                                <canvas id="bootstrapMeansChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-card flex-1">
+                            <div class="card-title"><i class="fa-solid fa-chart-area"></i> Phân phối Bootstrap của Hiệu số (Test - Control)</div>
+                            <div class="chart-container">
+                                <canvas id="bootstrapDiffChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card margin-top">
+                        <div class="card-title"><i class="fa-solid fa-circle-check"></i> Kết quả phân tích từ Bootstrap</div>
+                        <div class="card-body bootstrap-results-text">
+                            <div class="result-box">
+                                <p><strong>Khoảng tin cậy Bootstrap 95% cho Control Mean:</strong> <span class="val-highlight" id="boot-c-ci">[0.00, 0.00]</span></p>
+                                <p class="margin-top-xs"><strong>Khoảng tin cậy Bootstrap 95% cho Test Mean:</strong> <span class="val-highlight" id="boot-t-ci">[0.00, 0.00]</span></p>
+                                <p class="margin-top-xs"><strong>Khoảng tin cậy Bootstrap 95% cho Hiệu số trung bình (Test - Control):</strong> <span class="val-highlight" id="boot-diff-ci">[0.00, 0.00]</span></p>
+                            </div>
+                            <div class="desc-box">
+                                <p><strong>Nhận xét thống kê:</strong></p>
+                                <ul>
+                                    <li>Hai phân phối bootstrap trung bình của Control và Test chồng lấp lên nhau rất lớn.</li>
+                                    <li>Khoảng tin cậy 95% của hiệu số **chứa giá trị 0**. Điều này khẳng định một cách chắc chắn bằng phương pháp phi tham số (Resampling) rằng **không có sự khác biệt có ý nghĩa thống kê** nào ở lượng đơn hàng giữa nhóm Test và nhóm Control.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: Hypotheses -->
+            <section id="hypotheses" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-clipboard-question"></i> Đối chiếu giả thuyết & Khuyến nghị</h2>
+                    <p>Tổng hợp kết quả kiểm định thống kê và định hướng hành động kinh doanh</p>
+                </div>
+
+                <div class="hypotheses-list">
+                    <!-- Hypothesis 1 -->
+                    <div class="hypothesis-card failed">
+                        <div class="h-status-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                        <div class="h-content">
+                            <h3>1. Giả thuyết về số lượng đơn hàng (Purchases - KPI chính)</h3>
+                            <div class="h-setup">
+                                <span><strong>H₀:</strong> &mu;<sub>Control</sub> = &mu;<sub>Test</sub></span> | 
+                                <span><strong>H₁:</strong> &mu;<sub>Control</sub> &ne; &mu;<sub>Test</sub></span>
+                            </div>
+                            <p class="h-result"><strong>Kết quả kiểm định:</strong> Welch t-test p-value = <strong>0.9449 &ge; 0.05</strong>. Không đủ cơ sở bác bỏ H₀ (Fail to reject H₀).</p>
+                            <p class="h-verdict"><strong>Kết luận thực tế:</strong> Chiến dịch thầu tự động mới (Test) KHÔNG tạo ra sự thay đổi có ý nghĩa thống kê nào về lượng đơn hàng so với chiến dịch thầu truyền thống (Control).</p>
+                        </div>
+                    </div>
+
+                    <!-- Hypothesis 2 -->
+                    <div class="hypothesis-card passed">
+                        <div class="h-status-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="h-content">
+                            <h3>2. Giả thuyết về chi phí quảng cáo (Daily Spend)</h3>
+                            <div class="h-setup">
+                                <span><strong>H₀:</strong> &mu;<sub>Control</sub> = &mu;<sub>Test</sub></span> | 
+                                <span><strong>H₁:</strong> &mu;<sub>Control</sub> &ne; &mu;<sub>Test</sub></span>
+                            </div>
+                            <p class="h-result"><strong>Kết quả kiểm định:</strong> Welch t-test p-value = <strong>0.0115 &lt; 0.05</strong>. Bác bỏ H₀ (Reject H₀, accept H₁).</p>
+                            <p class="h-verdict"><strong>Kết luận thực tế:</strong> Chi phí trung bình ngày của nhóm Test cao hơn nhóm Control một cách có ý nghĩa thống kê (tăng khoảng 11.24%, tức tiêu tốn nhiều tiền hơn một cách có hệ thống).</p>
+                        </div>
+                    </div>
+
+                    <!-- Hypothesis 3 -->
+                    <div class="hypothesis-card failed">
+                        <div class="h-status-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                        <div class="h-content">
+                            <h3>3. Giả thuyết về lượt click website (Clicks)</h3>
+                            <div class="h-setup">
+                                <span><strong>H₀:</strong> &mu;<sub>Control</sub> = &mu;<sub>Test</sub></span> | 
+                                <span><strong>H₁:</strong> &mu;<sub>Control</sub> &ne; &mu;<sub>Test</sub></span>
+                            </div>
+                            <p class="h-result"><strong>Kết quả kiểm định:</strong> Welch t-test p-value = <strong>0.8927 &ge; 0.05</strong>. Không đủ cơ sở bác bỏ H₀.</p>
+                            <p class="h-verdict"><strong>Kết luận thực tế:</strong> Dù Test chi tiêu nhiều ngân sách hơn nhưng lượt click website trung bình ngày không tăng lên có ý nghĩa thống kê.</p>
+                        </div>
+                    </div>
+
+                    <!-- Hypothesis 4 -->
+                    <div class="hypothesis-card failed">
+                        <div class="h-status-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                        <div class="h-content">
+                            <h3>4. Giả thuyết về tương tác giỏ hàng (Add to Cart)</h3>
+                            <div class="h-setup">
+                                <span><strong>H₀:</strong> &mu;<sub>Control</sub> = &mu;<sub>Test</sub></span> | 
+                                <span><strong>H₁:</strong> &mu;<sub>Control</sub> &ne; &mu;<sub>Test</sub></span>
+                            </div>
+                            <p class="h-result"><strong>Kết quả kiểm định:</strong> Welch t-test p-value = <strong>0.5739 &ge; 0.05</strong>. Không đủ cơ sở bác bỏ H₀.</p>
+                            <p class="h-verdict"><strong>Kết luận thực tế:</strong> Lượt thêm vào giỏ hàng trung bình ngày không ghi nhận sự thay đổi đáng kể giữa hai nhóm chiến dịch quảng cáo.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Recommendations -->
+                <div class="dashboard-card recommendations-card margin-top">
+                    <div class="card-title"><i class="fa-solid fa-circle-nodes"></i> Quyết định Kinh doanh & Khuyến nghị vận hành</div>
+                    <div class="card-body recom-grid">
+                        <div class="recom-box danger-border">
+                            <span class="recom-title"><i class="fa-solid fa-ban"></i> KHÔNG triển khai rộng rãi chiến dịch Test</span>
+                            <p>Chiến dịch Test không tạo ra nhiều đơn hàng hơn nhưng lại tiêu tốn nhiều ngân sách hơn (+11.24%). Điều này đẩy chi phí trên mỗi đơn hàng (CPA) từ **$4.41** ở Control lên **$4.92** ở Test (tăng **11.5%** chi phí để có 1 đơn hàng). Việc triển khai toàn bộ chiến dịch Test sẽ làm sụt giảm nghiêm trọng hiệu quả ROI của doanh nghiệp.</p>
+                        </div>
+                        <div class="recom-box warning-border">
+                            <span class="recom-title"><i class="fa-solid fa-hourglass-half"></i> Tiếp tục thử nghiệm (Kéo dài thời gian test)</span>
+                            <p>Phân tích lực lượng thống kê (Power Analysis) cho thấy với cỡ mẫu hiện tại (~30 ngày/nhóm), lực lượng kiểm định đạt được rất thấp (achieved power < 10%). Điều này do kích thước hiệu ứng (effect size) quá nhỏ. Nếu doanh nghiệp mong muốn phát hiện sự khác biệt nhỏ này ở độ tin cậy cao, cần kéo dài thời gian chạy thử nghiệm (ví dụ: lên 60 ngày) hoặc tối ưu lại targeting để tạo ra sự khác biệt rõ rệt hơn.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
