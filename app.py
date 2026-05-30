@@ -23,32 +23,100 @@ st.set_page_config(
 # Custom CSS for premium styling
 st.markdown("""
 <style>
-    /* Custom CSS variables & styles */
-    .metric-card {
-        background-color: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 15px;
-        border-radius: 10px;
-        text-align: center;
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+    
+    /* Apply custom font across the app */
+    html, body, [data-testid="stSidebar"], .stApp {
+        font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
+    
+    /* Premium style for stMetric */
+    div[data-testid="stMetric"] {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        transition: all 0.3s ease-in-out;
+    }
+    div[data-testid="stMetric"]:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+        transform: translateY(-3px);
+    }
+    div[data-testid="stMetricValue"] {
+        font-size: 28px !important;
+        font-weight: 700 !important;
+        background: linear-gradient(90deg, #3b82f6, #6366f1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    
+    /* Custom Badge elements */
     .badge-control {
         background-color: rgba(59, 130, 246, 0.15);
         color: #3b82f6;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-weight: bold;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        display: inline-block;
     }
     .badge-test {
         background-color: rgba(255, 111, 67, 0.15);
         color: #ff6f43;
-        padding: 4px 10px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        border: 1px solid rgba(255, 111, 67, 0.3);
+        display: inline-block;
+    }
+    
+    /* Styled container headers */
+    h1, h2, h3 {
+        font-weight: 700 !important;
+        letter-spacing: -0.02em;
+    }
+    
+    /* Premium style for custom buttons */
+    .stButton>button {
+        background: linear-gradient(135deg, #4f46e5, #3b82f6);
+        color: white;
+        border: none;
+        padding: 10px 24px;
         border-radius: 12px;
-        font-weight: bold;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        width: auto;
+    }
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        transform: translateY(-1px);
+        color: white;
     }
 </style>
 """, unsafe_allowed_html=True)
 
-# 2. Load Cleaned Dataset
+# 2. Global Metric Labels Map
+METRIC_LABELS = {
+    "purchase": "Lượt đơn hàng (Purchases)",
+    "spend_usd": "Chi phí (Daily Spend USD)",
+    "website_clicks": "Lượt click website (Clicks)",
+    "impressions": "Lượt hiển thị (Impressions)",
+    "reach": "Lượt tiếp cận (Reach)",
+    "searches": "Lượt tìm kiếm (Searches)",
+    "view_content": "Lượt xem sản phẩm (View Content)",
+    "add_to_cart": "Lượt thêm vào giỏ hàng (Add to Cart)"
+}
+
+# 3. Load Cleaned Dataset
 @st.cache_data
 def load_data():
     df = pd.read_csv("data/processed/cleaned_marketing.csv")
@@ -64,7 +132,7 @@ except Exception as e:
 control_df = df[df['group'] == 'control'].sort_values('date')
 test_df = df[df['group'] == 'test'].sort_values('date')
 
-# 3. Sidebar Navigation
+# 4. Sidebar Navigation
 st.sidebar.image("https://img.icons8.com/clouds/100/ab-testing.png", width=70)
 st.sidebar.title("A/B Testing Pulse")
 st.sidebar.markdown("---")
@@ -102,25 +170,35 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allowed_html=True)
 
-# 4. Main Title
+# 5. Main Title
 st.title("📊 Marketing A/B Testing Interactive Dashboard")
-st.markdown("Hệ thống đánh giá hiệu suất quảng cáo & Kiểm định thống kê tự động (Triển khai bằng Streamlit)")
+st.markdown("Hệ thống đánh giá hiệu suất quảng cáo & Kiểm định thống kê tự động")
 st.markdown("---")
 
-# 5. Render Sections based on Navigation Selection
+# 6. Render Sections based on Navigation Selection
 
 if navigation == "🏠 Tổng quan KPI":
     st.header("🏠 Tổng quan hiệu suất tổng thể")
     st.markdown("So sánh các chỉ số hiệu suất trung bình ngày giữa hai nhóm chiến dịch Control và Test")
     
-    # Calculate means
     kpis = ['spend_usd', 'impressions', 'reach', 'website_clicks', 'purchase']
     c_means = control_df[kpis].mean()
     t_means = test_df[kpis].mean()
     pct_diffs = ((t_means - c_means) / c_means) * 100
     
+    # Calculate CTR (Clicks / Impressions)
+    c_ctr = (control_df['website_clicks'].sum() / control_df['impressions'].sum()) * 100
+    t_ctr = (test_df['website_clicks'].sum() / test_df['impressions'].sum()) * 100
+    ctr_diff = ((t_ctr - c_ctr) / c_ctr) * 100
+    
+    # Calculate CPA (Spend / Purchases)
+    c_cpa = control_df['spend_usd'].sum() / control_df['purchase'].sum()
+    t_cpa = test_df['spend_usd'].sum() / test_df['purchase'].sum()
+    cpa_diff = ((t_cpa - c_cpa) / c_cpa) * 100
+    
     # Grid columns
-    col1, col2, col3, col4 = st.columns(4)
+    st.markdown("### 📊 Chỉ số phễu đầu chiến dịch (Upper Funnel Metrics)")
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         st.metric(
@@ -136,23 +214,47 @@ if navigation == "🏠 Tổng quan KPI":
         )
     with col3:
         st.metric(
+            label="Tiếp cận khách hàng trung bình (Reach)",
+            value=f"{c_means['reach']/1000:.1f}K vs {t_means['reach']/1000:.1f}K",
+            delta=f"{pct_diffs['reach']:.2f}% (Test vs Control)"
+        )
+        
+    st.markdown("---")
+    st.markdown("### 🎯 Chỉ số tương tác & Chuyển đổi (Conversion & Efficiency)")
+    col4, col5, col6, col7 = st.columns(4)
+    
+    with col4:
+        st.metric(
             label="Lượt click website trung bình (Clicks)",
             value=f"{c_means['website_clicks']:,.0f} vs {t_means['website_clicks']:,.0f}",
             delta=f"{pct_diffs['website_clicks']:.2f}% (Test vs Control)"
         )
-    with col4:
+    with col5:
         st.metric(
             label="Lượt đơn hàng trung bình (Purchases)",
             value=f"{c_means['purchase']:.1f} vs {t_means['purchase']:.1f}",
             delta=f"{pct_diffs['purchase']:.2f}% (Test vs Control)",
-            delta_color="off" # Purchases difference is tiny and negative
+            delta_color="off"
+        )
+    with col6:
+        st.metric(
+            label="Tỷ lệ click quảng cáo (CTR)",
+            value=f"{c_ctr:.2f}% vs {t_ctr:.2f}%",
+            delta=f"{ctr_diff:.2f}% (Test vs Control)"
+        )
+    with col7:
+        st.metric(
+            label="Chi phí mỗi đơn hàng (CPA)",
+            value=f"${c_cpa:.2f} vs ${t_cpa:.2f}",
+            delta=f"{cpa_diff:.2f}% (Test vs Control)",
+            delta_color="inverse"
         )
         
     st.markdown("---")
     st.subheader("💡 Nhận xét nhanh (Quick Insights)")
     st.info("""
-    - **Hiệu quả chi phí thấp hơn ở nhóm Test:** Nhóm **Test** có chi phí trung bình hàng ngày tăng **11.24%** so với nhóm **Control**, nhưng số lượng đơn hàng (purchase) trung bình hàng ngày lại giảm nhẹ **-0.30%**.
-    - **Cơ chế phân phối ngân sách khác nhau:** Nhóm **Control** hiển thị rộng hơn nhiều (+62.15% impressions), nhưng nhóm **Test** lại thu hút lượng clicks và searches tốt hơn tương đương với lượng ngân sách chi tiêu, cho thấy cơ chế bidding của Test hướng tới tệp đối tượng có tương tác ban đầu cao hơn.
+    - **Hiệu quả chi phí thấp hơn ở nhóm Test:** Nhóm **Test** có chi phí trung bình hàng ngày tăng **11.24%** so với nhóm **Control**, nhưng số lượng đơn hàng (purchase) trung bình hàng ngày lại giảm nhẹ **-0.30%**. Do đó, CPA của nhóm Test tăng **11.53%** từ **$4.41** lên **$4.92**.
+    - **Cơ chế phân phối ngân sách khác nhau:** Nhóm **Control** hiển thị rộng hơn nhiều (+62.15% impressions), nhưng nhóm **Test** lại thu hút lượng clicks tốt tương đương với lượng ngân sách chi tiêu, và có tỷ lệ **CTR tốt hơn đáng kể (+45.41%)** nhờ việc tối ưu hóa đối tượng tương tác ban đầu tốt hơn của bidding tự động.
     - **Đứt gãy chuyển đổi cuối phễu:** Dù thu hút lượt click và tìm kiếm nhiều hơn ở phần trên của phễu, nhóm **Test** lại ghi nhận tỷ lệ chuyển đổi từ thêm vào giỏ hàng sang đơn hàng (Cart-to-Purchase) sụt giảm lớn so với Control.
     """)
 
@@ -298,12 +400,7 @@ elif navigation == "🧮 Kiểm định Welch t-test":
         stat_metric = st.selectbox(
             "Chọn chỉ số kiểm định:",
             ["purchase", "spend_usd", "website_clicks", "impressions"],
-            format_func=lambda x: {
-                "purchase": "Lượt đơn hàng (Purchases)",
-                "spend_usd": "Chi phí (Daily Spend USD)",
-                "website_clicks": "Lượt click website (Clicks)",
-                "impressions": "Lượt hiển thị (Impressions)"
-            }[x]
+            format_func=lambda x: METRIC_LABELS[x]
         )
     with col2:
         alpha = st.selectbox("Chọn mức ý nghĩa (\u03b1):", [0.01, 0.05, 0.10], index=1, format_func=lambda x: f"{x} (Độ tin cậy {(1-x)*100:.0f}%)")
@@ -316,7 +413,7 @@ elif navigation == "🧮 Kiểm định Welch t-test":
     
     # Calculate CIs
     n_c, n_t = len(c_vals), len(t_vals)
-    mean_c, mean_t = c_vals.mean(), t_vals.values.mean() if hasattr(t_vals, 'values') else t_vals.mean()
+    mean_c, mean_t = c_vals.mean(), t_vals.mean()
     var_c, var_t = c_vals.var(ddof=1), t_vals.var(ddof=1)
     
     mean_diff = mean_t - mean_c
@@ -332,6 +429,10 @@ elif navigation == "🧮 Kiểm định Welch t-test":
     pooled_std = np.sqrt(((n_c - 1)*var_c + (n_t - 1)*var_t) / (n_c + n_t - 2))
     cohen_d = mean_diff / pooled_std
     
+    # Group margin of error for individual means
+    error_c = stats.t.ppf(0.975, n_c - 1) * (c_vals.std(ddof=1) / np.sqrt(n_c))
+    error_t = stats.t.ppf(0.975, n_t - 1) * (t_vals.std(ddof=1) / np.sqrt(n_t))
+    
     # Show Results UI
     st.subheader("Kết quả Kiểm định Welch t-test")
     
@@ -343,10 +444,10 @@ elif navigation == "🧮 Kiểm định Welch t-test":
         
         if p_val < alpha:
             st.success(f"**KẾT LUẬN: BÁC BỎ H₀ (REJECT H₀)**")
-            st.markdown(f"Sự khác biệt về {stat_metric} giữa hai nhóm **CÓ ý nghĩa thống kê** ở mức &alpha; = {alpha}.")
+            st.markdown(f"Sự khác biệt về **{METRIC_LABELS[stat_metric]}** giữa hai nhóm **CÓ ý nghĩa thống kê** ở mức &alpha; = {alpha}.")
         else:
             st.error(f"**KẾT LUẬN: THẤT BẠI TRONG VIỆC BÁC BỎ H₀ (FAIL TO REJECT H₀)**")
-            st.markdown(f"Sự khác biệt về {stat_metric} giữa hai nhóm **KHÔNG có ý nghĩa thống kê** ở mức &alpha; = {alpha}.")
+            st.markdown(f"Sự khác biệt về **{METRIC_LABELS[stat_metric]}** giữa hai nhóm **KHÔNG có ý nghĩa thống kê** ở mức &alpha; = {alpha}.")
             
     with res_col2:
         st.markdown(f"**Trung bình Control:** `{mean_c:.2f}`")
@@ -359,6 +460,33 @@ elif navigation == "🧮 Kiểm định Welch t-test":
         d_interpret = "Negligible (Rất nhỏ)" if abs_d < 0.2 else ("Small (Nhỏ)" if abs_d < 0.5 else ("Medium (Vừa)" if abs_d < 0.8 else "Large (Lớn)"))
         st.markdown(f"**Cohen's d (Effect Size):** `{cohen_d:.4f}` ({d_interpret})")
         
+    # Visual comparison with error bars
+    st.markdown("---")
+    st.subheader("📊 Trực quan hóa giá trị trung bình & Khoảng tin cậy 95%")
+    fig_ci = go.Figure()
+    fig_ci.add_trace(go.Bar(
+        name='Giá trị trung bình',
+        x=['Control', 'Test'],
+        y=[mean_c, mean_t],
+        error_y=dict(
+            type='data',
+            array=[error_c, error_t],
+            visible=True,
+            thickness=2.5,
+            width=15,
+            color='rgba(255, 255, 255, 0.8)'
+        ),
+        marker_color=['#3b82f6', '#ff6f43'],
+        opacity=0.85
+    ))
+    fig_ci.update_layout(
+        title=f"So sánh giá trị trung bình kèm khoảng tin cậy 95% của {METRIC_LABELS[stat_metric]}",
+        xaxis_title="Nhóm thử nghiệm",
+        yaxis_title="Giá trị trung bình ngày",
+        template="plotly_dark"
+    )
+    st.plotly_chart(fig_ci, use_container_width=True)
+    
     st.markdown("---")
     st.subheader("⚠️ Phân tích Đa cộng tuyến (VIF)")
     st.markdown("""
@@ -373,41 +501,55 @@ elif navigation == "🔄 Bootstrap Simulator":
     control_vals = control_df['purchase'].values
     test_vals = test_df['purchase'].values
     
-    if st.button("🚀 Bắt đầu chạy mô phỏng Bootstrap (1,000 lần)"):
-        # Run bootstrap loop in python
-        n_c = len(control_vals)
-        n_t = len(test_vals)
+    # Use st.session_state to cache bootstrap results
+    if 'boot_results' not in st.session_state:
+        st.session_state.boot_results = None
         
-        c_boot_means = []
-        t_boot_means = []
-        diff_boot_means = []
-        
-        progress_bar = st.progress(0)
-        
-        for i in range(1000):
-            c_sample = np.random.choice(control_vals, size=n_c, replace=True)
-            t_sample = np.random.choice(test_vals, size=n_t, replace=True)
-            
-            c_m = c_sample.mean()
-            t_m = t_sample.mean()
-            
-            c_boot_means.append(c_m)
-            t_boot_means.append(t_m)
-            diff_boot_means.append(t_m - c_m)
-            
-            if i % 100 == 0:
-                progress_bar.progress((i + 1) / 1000)
+    col_btn1, col_btn2 = st.columns([2, 5])
+    with col_btn1:
+        run_btn = st.button("🚀 Bắt đầu chạy mô phỏng Bootstrap (1,000 lần)")
+    with col_btn2:
+        if st.session_state.boot_results is not None:
+            if st.button("🗑️ Xóa kết quả mô phỏng"):
+                st.session_state.boot_results = None
+                st.rerun()
                 
-        progress_bar.progress(1.0)
-        
-        c_boot_means = np.array(c_boot_means)
-        t_boot_means = np.array(t_boot_means)
-        diff_boot_means = np.array(diff_boot_means)
-        
-        # Calculate CIs
-        c_ci = np.percentile(c_boot_means, [2.5, 97.5])
-        t_ci = np.percentile(t_boot_means, [2.5, 97.5])
-        diff_ci = np.percentile(diff_boot_means, [2.5, 97.5])
+    if run_btn:
+        with st.spinner("Đang chạy mô phỏng tái mẫu (vectorized)..."):
+            n_c = len(control_vals)
+            n_t = len(test_vals)
+            
+            # Vectorized numpy simulation (very fast!)
+            c_samples = np.random.choice(control_vals, size=(1000, n_c), replace=True)
+            t_samples = np.random.choice(test_vals, size=(1000, n_t), replace=True)
+            
+            c_boot_means = c_samples.mean(axis=1)
+            t_boot_means = t_samples.mean(axis=1)
+            diff_boot_means = t_boot_means - c_boot_means
+            
+            # Calculate CIs
+            c_ci = np.percentile(c_boot_means, [2.5, 97.5])
+            t_ci = np.percentile(t_boot_means, [2.5, 97.5])
+            diff_ci = np.percentile(diff_boot_means, [2.5, 97.5])
+            
+            # Cache in session state
+            st.session_state.boot_results = {
+                "c_boot_means": c_boot_means,
+                "t_boot_means": t_boot_means,
+                "diff_boot_means": diff_boot_means,
+                "c_ci": c_ci,
+                "t_ci": t_ci,
+                "diff_ci": diff_ci
+            }
+            
+    if st.session_state.boot_results is not None:
+        res = st.session_state.boot_results
+        c_boot_means = res["c_boot_means"]
+        t_boot_means = res["t_boot_means"]
+        diff_boot_means = res["diff_boot_means"]
+        c_ci = res["c_ci"]
+        t_ci = res["t_ci"]
+        diff_ci = res["diff_ci"]
         
         st.subheader("Kết quả mô phỏng")
         
@@ -415,7 +557,7 @@ elif navigation == "🔄 Bootstrap Simulator":
         with col1:
             st.markdown(f"**95% Bootstrap CI cho Control Mean:** `[{c_ci[0]:.2f}, {c_ci[1]:.2f}]`")
             st.markdown(f"**95% Bootstrap CI cho Test Mean:** `[{t_ci[0]:.2f}, {t_ci[1]:.2f}]`")
-            st.markdown(f"**95% Bootstrap CI cho Hiệu số trung bình:** `[{diff_ci[0]:.2f}, {diff_ci[1]:.2f}]`")
+            st.markdown(f"**95% Bootstrap CI cho Hiệu số trung bình (Test - Control):** `[{diff_ci[0]:.2f}, {diff_ci[1]:.2f}]`")
         with col2:
             st.info("""
             **Kết luận phi tham số:**
@@ -479,42 +621,56 @@ elif navigation == "📊 Phân tích Hồi quy (Regression)":
         st.subheader("Hồi quy tuyến tính đa biến & Chỉ số VIF")
         st.markdown("Xây dựng mô hình OLS đa biến kết hợp nhiều đặc trưng trong phễu chuyển đổi để dự báo `purchase`.")
         
-        feature_cols = ['spend_usd', 'impressions', 'reach', 'website_clicks', 'searches', 'view_content', 'add_to_cart']
-        X_multi = sm.add_constant(df[feature_cols])
-        model_multi = sm.OLS(df['purchase'], X_multi).fit()
+        # Interactive Feature Selection
+        all_features = ['spend_usd', 'impressions', 'reach', 'website_clicks', 'searches', 'view_content', 'add_to_cart']
+        selected_features = st.multiselect(
+            "Chọn các đặc trưng đưa vào mô hình hồi quy đa biến:", 
+            options=all_features,
+            default=all_features,
+            format_func=lambda x: METRIC_LABELS[x]
+        )
         
-        # Display coefficients in a clean table
-        coef_df = pd.DataFrame({
-            "Hệ số (Coefficient)": model_multi.params,
-            "Sai số chuẩn (Std Error)": model_multi.bse,
-            "T-Statistic": model_multi.tvalues,
-            "P-value": model_multi.pvalues
-        })
-        st.markdown("**Kết quả hệ số hồi quy đa biến:**")
-        st.dataframe(coef_df.style.format("{:.4f}").highlight_between(left=0, right=0.05, subset=["P-value"], color="rgba(46, 204, 113, 0.2)"))
-
-        st.markdown(f"**R-squared ($R^2$):** `{model_multi.rsquared:.4f}` | **Adjusted $R^2$:** `{model_multi.rsquared_adj:.4f}`")
-        
-        # Calculate and display VIF
-        X_vif = df[feature_cols]
-        vif_data = pd.DataFrame()
-        vif_data["Đặc trưng (Feature)"] = X_vif.columns
-        vif_data["VIF"] = [variance_inflation_factor(X_vif.values, i) for i in range(len(X_vif.columns))]
-        vif_data = vif_data.sort_values(by="VIF", ascending=False)
-        
-        st.subheader("⚠️ Đánh giá Đa cộng tuyến (Multicollinearity)")
-        col_vif1, col_vif2 = st.columns([1, 1])
-        with col_vif1:
-            st.dataframe(vif_data.style.format({"VIF": "{:.2f}"}).highlight_between(left=5, right=100, subset=["VIF"], color="rgba(231, 76, 60, 0.2)"))
-        with col_vif2:
-            st.info("""
-            **Giải thích chỉ số VIF:**
-            - **VIF < 5:** Không xảy ra đa cộng tuyến nghiêm trọng.
-            - **VIF >= 5:** Có dấu hiệu đa cộng tuyến.
-            - **VIF >= 10:** Đa cộng tuyến nghiêm trọng.
+        if len(selected_features) == 0:
+            st.warning("⚠️ Vui lòng chọn ít nhất một đặc trưng để chạy mô hình hồi quy!")
+        else:
+            X_multi = sm.add_constant(df[selected_features])
+            model_multi = sm.OLS(df['purchase'], X_multi).fit()
             
-            **Nhận xét:** Biến `add_to_cart` (VIF > 12) và `searches` (VIF > 9) có tương quan tuyến tính rất mạnh với nhau. Điều này khiến cho hệ số hồi quy đa biến của chúng có thể bị sai lệch (standard error lớn) và khó giải thích độc lập.
-            """)
+            # Display coefficients in a clean table
+            coef_df = pd.DataFrame({
+                "Hệ số (Coefficient)": model_multi.params,
+                "Sai số chuẩn (Std Error)": model_multi.bse,
+                "T-Statistic": model_multi.tvalues,
+                "P-value": model_multi.pvalues
+            })
+            st.markdown("**Kết quả hệ số hồi quy đa biến:**")
+            st.dataframe(coef_df.style.format("{:.4f}").highlight_between(left=0, right=0.05, subset=["P-value"], color="rgba(46, 204, 113, 0.2)"), use_container_width=True)
+
+            st.markdown(f"**R-squared ($R^2$):** `{model_multi.rsquared:.4f}` | **Adjusted $R^2$:** `{model_multi.rsquared_adj:.4f}`")
+            
+            # Calculate and display VIF
+            if len(selected_features) > 1:
+                X_vif = df[selected_features]
+                vif_data = pd.DataFrame()
+                vif_data["Đặc trưng (Feature)"] = X_vif.columns
+                vif_data["VIF"] = [variance_inflation_factor(X_vif.values, i) for i in range(len(X_vif.columns))]
+                vif_data = vif_data.sort_values(by="VIF", ascending=False)
+                
+                st.subheader("⚠️ Đánh giá Đa cộng tuyến (Multicollinearity)")
+                col_vif1, col_vif2 = st.columns([1, 1])
+                with col_vif1:
+                    st.dataframe(vif_data.style.format({"VIF": "{:.2f}"}).highlight_between(left=5, right=100, subset=["VIF"], color="rgba(231, 76, 60, 0.2)"), use_container_width=True)
+                with col_vif2:
+                    st.info("""
+                    **Giải thích chỉ số VIF:**
+                    - **VIF < 5:** Không xảy ra đa cộng tuyến nghiêm trọng.
+                    - **VIF >= 5:** Có dấu hiệu đa cộng tuyến.
+                    - **VIF >= 10:** Đa cộng tuyến nghiêm trọng.
+                    
+                    **Mẹo khám phá:** Hãy thử bỏ chọn `add_to_cart` (VIF > 12) hoặc `searches` (VIF > 9) trên hộp tùy chọn phía trên để quan sát xem độ cộng tuyến của mô hình hồi quy giảm nhanh thế nào và hệ số của các biến khác trở nên ổn định ra sao!
+                    """)
+            else:
+                st.info("Cần ít nhất 2 đặc trưng được chọn để tính toán chỉ số đa cộng tuyến VIF.")
 
 elif navigation == "🤖 Mô hình Phân loại (Classification)":
     st.header("🤖 Mô hình Phân loại nhóm chiến dịch (Control vs Test)")
@@ -522,13 +678,19 @@ elif navigation == "🤖 Mô hình Phân loại (Classification)":
     
     st.warning("⚠️ **Tránh rò rỉ dữ liệu (Data Leakage):** Chỉ số KPI chính `purchase` đã bị loại bỏ khỏi danh sách đặc trưng đầu vào để tránh rò rỉ kết quả A/B test vào mô hình phân loại.")
 
+    # Interactive hyperparameters configuration
+    with st.expander("⚙️ Tùy chỉnh tham số mô hình"):
+        test_size_val = st.slider("Tỷ lệ tập kiểm tra (Test Size Ratio):", 0.10, 0.50, 0.25, 0.05)
+        rf_estimators = st.slider("Số lượng cây quyết định (n_estimators):", 10, 200, 100, 10)
+        rf_max_depth = st.slider("Độ sâu tối đa của cây (max_depth):", 2, 10, 4, 1)
+
     # Model Setup
     feat_cols = ['spend_usd', 'impressions', 'reach', 'website_clicks', 'searches', 'view_content', 'add_to_cart']
     X_class = df[feat_cols]
     y_class = (df['group'] == 'test').astype(int)
     
     # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X_class, y_class, test_size=0.25, random_state=42, stratify=y_class)
+    X_train, X_test, y_train, y_test = train_test_split(X_class, y_class, test_size=test_size_val, random_state=42, stratify=y_class)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -539,7 +701,7 @@ elif navigation == "🤖 Mô hình Phân loại (Classification)":
     lr_train_acc = lr_model.score(X_train_scaled, y_train) * 100
     lr_test_acc = lr_model.score(X_test_scaled, y_test) * 100
     
-    rf_model = RandomForestClassifier(random_state=42, n_estimators=100, max_depth=4)
+    rf_model = RandomForestClassifier(random_state=42, n_estimators=rf_estimators, max_depth=rf_max_depth)
     rf_model.fit(X_train, y_train)
     rf_train_acc = rf_model.score(X_train, y_train) * 100
     rf_test_acc = rf_model.score(X_test, y_test) * 100
@@ -558,7 +720,7 @@ elif navigation == "🤖 Mô hình Phân loại (Classification)":
     # Feature Importance plot
     st.subheader("Độ quan trọng của các đặc trưng (Random Forest Feature Importance)")
     importances = rf_model.feature_importances_
-    forest_importances = pd.DataFrame({"Đặc trưng": feat_cols, "Độ quan trọng": importances}).sort_values(by="Độ quan trọng", ascending=True)
+    forest_importances = pd.DataFrame({"Đặc trưng": [METRIC_LABELS[f] for f in feat_cols], "Độ quan trọng": importances}).sort_values(by="Độ quan trọng", ascending=True)
     
     fig_imp = px.bar(forest_importances, x="Độ quan trọng", y="Đặc trưng", orientation="h",
                      title="Mức độ ảnh hưởng đến việc phân lớp Control vs Test",
@@ -579,14 +741,27 @@ elif navigation == "⚡ Phân tích Lực lượng (Power Analysis)":
     # Standard statistics solver
     power_analysis = TTestIndPower()
     
-    # Calculate observed effect size for purchase
-    c_vals = control_df['purchase'].values
-    t_vals = test_df['purchase'].values
+    # Interactive Metric Selection
+    power_metric = st.selectbox(
+        "Chọn chỉ số để phân tích lực lượng:",
+        ["purchase", "spend_usd", "website_clicks", "impressions"],
+        format_func=lambda x: METRIC_LABELS[x]
+    )
+    
+    # Calculate observed effect size
+    c_vals = control_df[power_metric].values
+    t_vals = test_df[power_metric].values
     mean_c, mean_t = c_vals.mean(), t_vals.mean()
     var_c, var_t = c_vals.var(ddof=1), t_vals.var(ddof=1)
     n_c, n_t = len(c_vals), len(t_vals)
     pooled_std = np.sqrt(((n_c - 1)*var_c + (n_t - 1)*var_t) / (n_c + n_t - 2))
-    observed_d = (mean_t - mean_c) / pooled_std
+    
+    # Calculate observed cohen's d
+    if pooled_std > 0:
+        observed_d = (mean_t - mean_c) / pooled_std
+    else:
+        observed_d = 0.0
+        
     abs_d = abs(observed_d)
     
     st.subheader("Cỡ mẫu cần thiết (Sample Size Calculator)")
@@ -624,14 +799,27 @@ elif navigation == "⚡ Phân tích Lực lượng (Power Analysis)":
             
     st.markdown("---")
     st.subheader("💡 Phân tích sâu về cỡ mẫu")
-    st.info(f"""
-    - **Effect size thực tế (Cohen's d) của lượng đơn hàng (purchase) là `{observed_d:.4f}` (rất nhỏ).**
-    - Để phát hiện một sự khác biệt vô cùng nhỏ như vậy ở mức $\\alpha = 0.05$ và lực lượng $0.80$, ta sẽ cần tới **{int(np.ceil(power_analysis.solve_power(effect_size=abs_d, alpha=0.05, power=0.80, alternative='two-sided'))):,} ngày** chạy chiến dịch cho mỗi nhóm! Điều này là không khả thi trên thực tế.
-    - Do đó, nếu doanh nghiệp muốn triển khai thử nghiệm mới, họ cần nhắm tới các thay đổi đột phá tạo ra effect size lớn hơn (Cohen's d từ **0.2** trở lên - cần khoảng **393 ngày** hoặc tối ưu phễu chuyển đổi để phát hiện thay đổi rõ ràng hơn).
-    """)
+    
+    # Custom message based on selection
+    if power_metric == "purchase":
+        st.info(f"""
+        - **Effect size thực tế (Cohen's d) của lượng đơn hàng (purchase) là `{observed_d:.4f}` (rất nhỏ).**
+        - Để phát hiện một sự khác biệt vô cùng nhỏ như vậy ở mức $\\alpha = 0.05$ và lực lượng $0.80$, ta sẽ cần tới **{int(np.ceil(power_analysis.solve_power(effect_size=abs_d, alpha=0.05, power=0.80, alternative='two-sided'))):,} ngày** chạy chiến dịch cho mỗi nhóm! Điều này là không khả thi trên thực tế.
+        - Do đó, nếu doanh nghiệp muốn triển khai thử nghiệm mới, họ cần nhắm tới các thay đổi đột phá tạo ra effect size lớn hơn (Cohen's d từ **0.2** trở lên - cần khoảng **393 ngày** hoặc tối ưu phễu chuyển đổi để phát hiện thay đổi rõ ràng hơn).
+        """)
+    else:
+        try:
+            theoretical_n = int(np.ceil(power_analysis.solve_power(effect_size=abs_d, alpha=0.05, power=0.80, alternative='two-sided')))
+            st.info(f"""
+            - **Effect size thực tế (Cohen's d) của {METRIC_LABELS[power_metric]} là `{observed_d:.4f}`.**
+            - Để phát hiện chính xác kích thước hiệu ứng thực tế này ở mức ý nghĩa $\\alpha = 0.05$ và lực lượng $0.80$, ta cần cỡ mẫu tối thiểu là **{theoretical_n:,} ngày** cho mỗi nhóm.
+            - Nếu cỡ mẫu thực tế (`{max(n_c, n_t)}` ngày) nhỏ hơn cỡ mẫu lý thuyết, nghĩa là kết quả kiểm định của biến số này có độ tin cậy thống kê chưa thực sự tối ưu.
+            """)
+        except:
+            st.info("Kích thước hiệu ứng quá nhỏ để tính toán cỡ mẫu lý thuyết trong khoảng hợp lệ.")
 
 elif navigation == "📋 Đối chiếu giả thuyết":
-    st.header("📋 Đối chiếu giả thuyết & Khuyết nghị Kinh doanh")
+    st.header("📋 Đối chiếu giả thuyết & Khuyến nghị Kinh doanh")
     st.markdown("Tổng kết kết quả kiểm định A/B test thực tế đối chiếu với các giả thuyết đã đề ra")
     
     # Hypothesis 1
