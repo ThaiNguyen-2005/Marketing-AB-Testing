@@ -34,32 +34,33 @@ st.markdown("""
     
     /* Premium style for stMetric */
     div[data-testid="stMetric"] {
-        background: #111827 !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        background: var(--secondary-background-color) !important;
+        border: 1px solid rgba(128, 128, 128, 0.1) !important;
         border-radius: 16px !important;
         padding: 20px 24px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05) !important;
         backdrop-filter: blur(8px) !important;
         -webkit-backdrop-filter: blur(8px) !important;
         transition: all 0.3s ease-in-out !important;
     }
     div[data-testid="stMetric"]:hover {
-        background: #1f2937 !important;
-        border-color: rgba(255, 255, 255, 0.2) !important;
-        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3) !important;
+        background: var(--secondary-background-color) !important;
+        border-color: rgba(128, 128, 128, 0.2) !important;
+        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.08) !important;
         transform: translateY(-3px) !important;
     }
     div[data-testid="stMetricValue"],
     div[data-testid="stMetricValue"] * {
         font-size: 28px !important;
         font-weight: 700 !important;
-        color: #ffffff !important;
+        color: var(--text-color) !important;
         background: transparent !important;
-        -webkit-text-fill-color: #ffffff !important;
+        -webkit-text-fill-color: var(--text-color) !important;
     }
     div[data-testid="stMetricLabel"],
     div[data-testid="stMetricLabel"] * {
-        color: #9ca3af !important;
+        color: var(--text-color) !important;
+        opacity: 0.7 !important;
     }
     
     /* KPI Card Style CSS */
@@ -70,11 +71,11 @@ st.markdown("""
         margin-bottom: 30px;
     }
     .kpi-card {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.07);
+        background: var(--secondary-background-color);
+        border: 1px solid rgba(128, 128, 128, 0.1);
         border-radius: 20px;
         padding: 22px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         transition: all 0.3s ease-in-out;
@@ -85,9 +86,9 @@ st.markdown("""
     }
     .kpi-card:hover {
         transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.04);
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
+        background: var(--secondary-background-color);
+        border-color: rgba(128, 128, 128, 0.2);
+        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.08);
     }
     .kpi-icon {
         font-size: 2rem;
@@ -95,7 +96,8 @@ st.markdown("""
     }
     .kpi-title {
         font-size: 0.8rem;
-        color: #9ca3af;
+        color: var(--text-color);
+        opacity: 0.7;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -103,8 +105,11 @@ st.markdown("""
     .kpi-value {
         font-size: 1.8rem;
         font-weight: 800;
-        color: #ffffff;
+        color: var(--text-color);
         margin: 6px 0;
+    }
+    .winner-text {
+        color: #ca8a04 !important;
     }
     .kpi-subtitle {
         display: flex;
@@ -115,33 +120,33 @@ st.markdown("""
     
     /* Custom Badge elements */
     .badge-control {
-        background-color: rgba(59, 130, 246, 0.15);
+        background-color: rgba(59, 130, 246, 0.12);
         color: #3b82f6;
         padding: 4px 12px;
         border-radius: 20px;
         font-weight: 600;
         font-size: 0.8rem;
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        border: 1px solid rgba(59, 130, 246, 0.2);
         display: inline-block;
     }
     .badge-test {
-        background-color: rgba(255, 111, 67, 0.15);
+        background-color: rgba(255, 111, 67, 0.12);
         color: #ff6f43;
         padding: 4px 12px;
         border-radius: 20px;
         font-weight: 600;
         font-size: 0.8rem;
-        border: 1px solid rgba(255, 111, 67, 0.3);
+        border: 1px solid rgba(255, 111, 67, 0.2);
         display: inline-block;
     }
     .badge-winner {
-        background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(202, 138, 4, 0.2));
-        color: #facc15;
+        background: linear-gradient(135deg, rgba(202, 138, 4, 0.12), rgba(161, 98, 7, 0.12));
+        color: #ca8a04;
         padding: 4px 12px;
         border-radius: 20px;
         font-weight: 700;
         font-size: 0.8rem;
-        border: 1px solid rgba(234, 179, 8, 0.4);
+        border: 1px solid rgba(202, 138, 4, 0.3);
         display: inline-block;
     }
     
@@ -246,12 +251,12 @@ st.sidebar.markdown(f"**Test (Thử nghiệm):** 30 ngày  \n<span class='badge-
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
-    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: rgba(255, 255, 255, 0.05); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+    <div style="width: 40px; height: 40px; border-radius: 50%; background-color: rgba(128, 128, 128, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
         👤
     </div>
     <div style="display: flex; flex-direction: column;">
-        <span style="font-size: 0.9rem; font-weight: 600; color: #fff;">Nguyễn Trần Bảo Thái</span>
-        <span style="font-size: 0.75rem; color: #6b7280;">Data Analyst</span>
+        <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-color);">Nguyễn Trần Bảo Thái</span>
+        <span style="font-size: 0.75rem; color: var(--text-color); opacity: 0.65;">Data Analyst</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -316,7 +321,7 @@ if navigation == "🏠 Tổng quan KPI":
         <div class="kpi-card">
             <div class="kpi-icon">🏆</div>
             <div class="kpi-title">Chiến dịch chiến thắng (Winner)</div>
-            <div class="kpi-value" style="color: #facc15; font-size: 1.5rem; margin-top: 12px; font-weight: 700;">Control Group</div>
+            <div class="kpi-value winner-text" style="font-size: 1.5rem; margin-top: 12px; font-weight: 700;">Control Group</div>
             <div class="kpi-subtitle">
                 <span class="badge-winner">Tiết kiệm 11.5% CPA</span>
             </div>
@@ -1161,8 +1166,8 @@ elif navigation == "🤖 Mô hình Phân loại & ML App":
             st.markdown(f"""
             <div class="prediction-box">
                 <h3 style="color: #4f46e5; margin: 0;">🔮 Kết quả dự báo số đơn hàng:</h3>
-                <h1 style="color: #ffffff; font-size: 3.5rem; margin: 15px 0;">{pred_val:.2f} <span style="font-size: 1.5rem; color: #9ca3af; font-weight: 500;">đơn hàng</span></h1>
-                <p style="color: #9ca3af; margin: 0; font-size: 0.9rem;">Dự đoán được xây dựng dựa trên dữ liệu lịch sử vận hành của 59 ngày chiến dịch (Control & Test).</p>
+                <h1 style="color: var(--text-color); font-size: 3.5rem; margin: 15px 0;">{pred_val:.2f} <span style="font-size: 1.5rem; color: var(--text-color); opacity: 0.7; font-weight: 500;">đơn hàng</span></h1>
+                <p style="color: var(--text-color); opacity: 0.7; margin: 0; font-size: 0.9rem;">Dự đoán được xây dựng dựa trên dữ liệu lịch sử vận hành của 59 ngày chiến dịch (Control & Test).</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -1195,8 +1200,8 @@ elif navigation == "🤖 Mô hình Phân loại & ML App":
             st.markdown(f"""
             <div class="prediction-box" style="border-color: {class_color};">
                 <h3 style="color: {class_color}; margin: 0;">🤖 Nhóm chiến dịch được phân loại:</h3>
-                <h1 style="color: #ffffff; font-size: 2.8rem; margin: 15px 0;">{class_label}</h1>
-                <h4 style="color: #9ca3af; margin: 0; font-weight: 500;">Độ tin cậy của mô hình: <span style="color: #ffffff; font-weight: 700;">{confidence:.1f}%</span></h4>
+                <h1 style="color: var(--text-color); font-size: 2.8rem; margin: 15px 0;">{class_label}</h1>
+                <h4 style="color: var(--text-color); opacity: 0.7; margin: 0; font-weight: 500;">Độ tin cậy của mô hình: <span style="color: var(--text-color); font-weight: 700;">{confidence:.1f}%</span></h4>
             </div>
             """, unsafe_allow_html=True)
 
