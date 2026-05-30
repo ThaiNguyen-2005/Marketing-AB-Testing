@@ -190,6 +190,47 @@ st.markdown("""
     summary {
         list-style: none !important;
     }
+    
+    /* Style Streamlit Radio as a Sidebar Menu */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-testid="stRadioOption"] {
+        background-color: var(--secondary-background-color) !important;
+        border: 1px solid rgba(128, 128, 128, 0.08) !important;
+        border-radius: 12px !important;
+        padding: 12px 16px !important;
+        margin: 0 !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-testid="stRadioOption"]:hover {
+        background-color: rgba(128, 128, 128, 0.08) !important;
+        border-color: rgba(128, 128, 128, 0.15) !important;
+        transform: translateX(4px) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-testid="stRadioOption"] div[data-testid="stVisualCheckbox"] {
+        display: none !important; /* Hide circles */
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-testid="stRadioOption"] div[data-testid="stMarkdownContainer"] p {
+        margin: 0 !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
+        color: var(--text-color) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-testid="stRadioOption"]:has(input[type="radio"]:checked) {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.12) 0%, rgba(139, 92, 246, 0.04) 100%) !important;
+        border-left: 4px solid #3b82f6 !important;
+        border-color: rgba(59, 130, 246, 0.25) !important;
+    }
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label[data-testid="stRadioOption"]:has(input[type="radio"]:checked) div[data-testid="stMarkdownContainer"] p {
+        font-weight: 700 !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -233,6 +274,7 @@ st.sidebar.markdown("""
 </div>
 """, unsafe_allow_html=True)
 st.sidebar.markdown("---")
+st.sidebar.markdown("<h3 style='font-size: 0.85rem; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-color); opacity: 0.6; margin-top: 10px; margin-bottom: 12px; font-weight: 700;'>Danh mục phân tích</h3>", unsafe_allow_html=True)
 
 navigation = st.sidebar.radio(
     "Danh mục phân tích:",
@@ -246,7 +288,8 @@ navigation = st.sidebar.radio(
         "🤖 Mô hình Phân loại & ML App",
         "⚡ Phân tích Lực lượng (Power Analysis)",
         "📋 Đối chiếu giả thuyết"
-    ]
+    ],
+    label_visibility="collapsed"
 )
 
 st.sidebar.markdown("---")
