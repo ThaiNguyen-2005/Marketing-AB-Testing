@@ -184,6 +184,12 @@ st.markdown("""
         margin-top: 15px;
         box-shadow: 0 8px 32px 0 rgba(79, 70, 229, 0.1);
     }
+    summary::-webkit-details-marker {
+        display: none !important;
+    }
+    summary {
+        list-style: none !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -263,13 +269,23 @@ except Exception:
     """
 
 st.sidebar.markdown(f"""
-<div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
-    {avatar_html}
-    <div style="display: flex; flex-direction: column;">
-        <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-color);">Nguyễn Trần Bảo Thái</span>
-        <span style="font-size: 0.75rem; color: var(--text-color); opacity: 0.65;">Data Analyst</span>
+<details style="cursor: pointer; outline: none; width: 100%;">
+    <summary style="list-style: none; outline: none;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+            {avatar_html}
+            <div style="display: flex; flex-direction: column; flex-grow: 1;">
+                <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-color);">Nguyễn Trần Bảo Thái</span>
+                <span style="font-size: 0.75rem; color: var(--text-color); opacity: 0.65;">Data Analyst <span style="font-size: 0.65rem;">▼</span></span>
+            </div>
+        </div>
+    </summary>
+    <div style="margin-top: 10px; padding: 12px; background: rgba(128, 128, 128, 0.08); border-radius: 12px; font-size: 0.8rem; color: var(--text-color); border: 1px solid rgba(128, 128, 128, 0.15); display: flex; flex-direction: column; gap: 6px;">
+        <div><strong>👤 Sinh viên:</strong> Nguyễn Trần Bảo Thái (2005)</div>
+        <div><strong>💻 Lĩnh vực:</strong> Data Science / ML</div>
+        <div><strong>🛠️ Công cụ:</strong> Python, Streamlit, Git, OLS</div>
+        <div><strong>🔗 GitHub:</strong> <a href="https://github.com/ThaiNguyen-2005" target="_blank" style="color: var(--primary-color); text-decoration: none; font-weight: 600;">@ThaiNguyen-2005</a></div>
     </div>
-</div>
+</details>
 """, unsafe_allow_html=True)
 
 # 5. Main Title

@@ -903,3 +903,10 @@ body {
         flex-direction: column;
     }
 }
+
+summary::-webkit-details-marker {
+    display: none !important;
+}
+summary {
+    list-style: none !important;
+}
