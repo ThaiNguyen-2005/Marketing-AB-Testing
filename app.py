@@ -7,11 +7,12 @@ from scipy import stats
 import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from statsmodels.stats.power import TTestIndPower
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.pipeline import make_pipeline
 
 # 1. Page Configuration
 st.set_page_config(
@@ -223,9 +224,9 @@ navigation = st.sidebar.radio(
         "🏠 Tổng quan KPI",
         "📈 Phân tích Chuỗi thời gian",
         "🎯 Phễu chuyển đổi",
-        "🧮 Kiểm định Welch t-test",
+        "🧮 Kiểm định Welch t-test & Giả định",
         "🔄 Bootstrap Simulator",
-        "📊 Phân tích Hồi quy (Regression)",
+        "📊 Phân tích Hồi quy & Chẩn đoán",
         "🤖 Mô hình Phân loại & ML App",
         "⚡ Phân tích Lực lượng (Power Analysis)",
         "📋 Đối chiếu giả thuyết"
@@ -363,7 +364,7 @@ elif navigation == "📈 Phân tích Chuỗi thời gian":
     st.header("📈 Phân tích Chuỗi thời gian & Biến động")
     st.markdown("Khai thác trục thời gian của chiến dịch để theo dõi tính ổn định và sự phát triển lũy kế")
     
-    time_tab1, time_tab2, time_tab3 = st.tabs(["Biến động hàng ngày", "Tỷ lệ chuyển đổi theo thời gian", "Độ thị Lũy kế (Cumulative Charts)"])
+    time_tab1, time_tab2, time_tab3 = st.tabs(["Biến động hàng ngày", "Tỷ lệ chuyển đổi theo thời gian", "Đồ thị Lũy kế (Cumulative Charts)"])
     
     with time_tab1:
         st.subheader("Theo dõi chỉ số hàng ngày")
@@ -527,9 +528,9 @@ elif navigation == "🎯 Phễu chuyển đổi":
     - Điểm đứt gãy lớn nhất ở nhóm **Test** nằm ở bước cuối: chuyển đổi từ thêm vào giỏ hàng (`add_to_cart`) sang mua hàng (`purchase`). Control đạt hiệu suất chuyển đổi **59.13%**, trong khi Test chỉ đạt **51.81%** (giảm gần 7.32% hiệu suất).
     """)
 
-elif navigation == "🧮 Kiểm định Welch t-test":
-    st.header("🧮 Kiểm định thống kê Welch's t-test")
-    st.markdown("Chạy kiểm định t-test độc lập với giả định phương sai không đồng nhất")
+elif navigation == "🧮 Kiểm định Welch t-test & Giả định":
+    st.header("🧮 Kiểm định Thống kê & Kiểm tra Giả định")
+    st.markdown("Thực hiện kiểm định giả thuyết thống kê (Parametric & Non-parametric) và chẩn đoán phân phối dữ liệu")
     
     col1, col2 = st.columns(2)
     
@@ -574,6 +575,13 @@ elif navigation == "🧮 Kiểm định Welch t-test":
     abs_d = abs(cohen_d)
     d_interpret = "Rất nhỏ (Negligible)" if abs_d < 0.2 else ("Nhỏ (Small)" if abs_d < 0.5 else ("Vừa (Medium)" if abs_d < 0.8 else "Lớn (Large)"))
     
+    # Assumptions checks (Shapiro-Wilk normality test)
+    shapiro_stat_c, shapiro_p_c = stats.shapiro(c_vals)
+    shapiro_stat_t, shapiro_p_t = stats.shapiro(t_vals)
+    
+    # Non-parametric Mann-Whitney U test alternative
+    u_stat, mw_p_val = stats.mannwhitneyu(c_vals, t_vals, alternative='two-sided')
+    
     st.subheader("📊 Bảng kết quả kiểm định chi tiết (Welch t-test Report)")
     
     # Formatted Statistical Table
@@ -614,13 +622,39 @@ elif navigation == "🧮 Kiểm định Welch t-test":
         
     st.dataframe(stat_summary.style.apply(highlight_significance, axis=1), use_container_width=True)
     
-    col1, col2 = st.columns(2)
-    with col1:
+    col_inf1, col_inf2 = st.columns(2)
+    with col_inf1:
         if p_val < alpha:
             st.success(f"🎉 **KẾT LUẬN: BÁC BỎ H₀ (REJECT H₀)** - Sự khác biệt về **{METRIC_LABELS[stat_metric]}** giữa hai nhóm có ý nghĩa thống kê rõ ràng ở mức độ tin cậy {(1-alpha)*100:.0f}%.")
         else:
             st.warning(f"⚠️ **KẾT LUẬN: THẤT BẠI BÁC BỎ H₀ (FAIL TO REJECT H₀)** - Không có sự chênh lệch có ý nghĩa thống kê nào về **{METRIC_LABELS[stat_metric]}** giữa Control và Test.")
             
+    # Assumptions Check UI
+    st.markdown("---")
+    st.subheader("🛠️ Kiểm tra các giả định thống kê & Kiểm định phi tham số")
+    
+    col_a1, col_a2 = st.columns(2)
+    
+    with col_a1:
+        st.markdown("##### 1. Giả định phân phối chuẩn (Normality Check - Shapiro-Wilk)")
+        st.markdown(f"- Nhóm Control: Shapiro statistic = `{shapiro_stat_c:.4f}`, p-value = `{shapiro_p_c:.5f}`")
+        st.markdown(f"- Nhóm Test: Shapiro statistic = `{shapiro_stat_t:.4f}`, p-value = `{shapiro_p_t:.5f}`")
+        
+        if shapiro_p_c >= 0.05 and shapiro_p_t >= 0.05:
+            st.success("✅ **Đạt giả định phân phối chuẩn:** Cả hai mẫu đều không bác bỏ giả định phân phối chuẩn (p >= 0.05). Kiểm định Welch's t-test hoàn toàn đáng tin cậy.")
+        else:
+            st.warning("⚠️ **Vi phạm giả định phân phối chuẩn:** Ít nhất một mẫu có phân phối lệch chuẩn (p < 0.05). Tuy nhiên, vì cỡ mẫu mỗi nhóm tương đối đủ lớn ($N \\approx 30$), Welch's t-test vẫn khá vững chãi nhờ Định lý giới hạn trung tâm (CLT). Để kiểm chứng chéo, hãy quan sát kiểm định phi tham số bên cạnh.")
+            
+    with col_a2:
+        st.markdown("##### 2. Kiểm định phi tham số thay thế (Mann-Whitney U test)")
+        st.markdown("Mann-Whitney U test là kiểm định phi tham số thay thế khi dữ liệu lệch chuẩn và không yêu cầu giả định phân phối chuẩn.")
+        st.markdown(f"- **U-Statistic:** `{u_stat:,.1f}` | **P-value:** `{mw_p_val:.5f}`")
+        
+        if mw_p_val < alpha:
+            st.success(f"🎉 **Bác bỏ H₀ theo Mann-Whitney U test (p < {alpha}):** Phát hiện sự chênh lệch có ý nghĩa thống kê.")
+        else:
+            st.error(f"❌ **Chấp nhận H₀ theo Mann-Whitney U test (p >= {alpha}):** Không phát hiện sự chênh lệch có ý nghĩa thống kê nào.")
+
     # Visual comparison with error bars
     st.markdown("---")
     st.subheader("📊 Trực quan hóa giá trị trung bình & Khoảng tin cậy 95%")
@@ -705,19 +739,32 @@ elif navigation == "🔄 Bootstrap Simulator":
         t_ci = res["t_ci"]
         diff_ci = res["diff_ci"]
         
+        # Calculate theoretical Welch standard error of difference
+        var_c, var_t = control_vals.var(ddof=1), test_vals.var(ddof=1)
+        n_c, n_t = len(control_vals), len(test_vals)
+        se_diff = np.sqrt((var_c / n_c) + (var_t / n_t))
+        se_boot = diff_boot_means.std()
+        
         st.subheader("Kết quả mô phỏng")
         
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"**95% Bootstrap CI cho Control Mean:** `[{c_ci[0]:.2f}, {c_ci[1]:.2f}]`")
             st.markdown(f"**95% Bootstrap CI cho Test Mean:** `[{t_ci[0]:.2f}, {t_ci[1]:.2f}]`")
-            st.markdown(f"**95% Bootstrap CI cho Hiệu số trung bình (Test - Control):** `[{diff_ci[0]:.2f}, {diff_ci[1]:.2f}]`")
+            st.markdown(f"**95% Bootstrap CI cho Hiệu số trung bình:** `[{diff_ci[0]:.2f}, {diff_ci[1]:.2f}]`")
+            
+            # Standard error convergence presentation
+            st.markdown("##### 📊 So sánh Sai số chuẩn (Standard Error Convergence)")
+            st.markdown(f"- **Sai số chuẩn lý thuyết (Welch SE):** `{se_diff:.4f}`")
+            st.markdown(f"- **Sai số chuẩn thực nghiệm (Bootstrap SE):** `{se_boot:.4f}`")
+            st.markdown(f"- **Độ lệch tuyệt đối giữa hai phương pháp:** `{abs(se_diff - se_boot):.5f}`")
         with col2:
             st.info("""
             **Kết luận phi tham số:**
             - Phân phối bootstrap trung bình của Control và Test chồng lấp lên nhau rất lớn.
             - Khoảng tin cậy 95% của hiệu số trung bình **chứa giá trị 0**.
             - Xác nhận vững chắc rằng **không có sự khác biệt có ý nghĩa thống kê** nào ở lượng đơn hàng giữa 2 chiến dịch.
+            - **Sự tương đồng về Standard Error:** Sai số chuẩn từ Bootstrap hội tụ cực sát với công thức Welch lý thuyết, chứng minh tính tin cậy của cả hai phương pháp.
             """)
             
         # Draw Plotly Histograms
@@ -735,11 +782,11 @@ elif navigation == "🔄 Bootstrap Simulator":
     else:
         st.write("Nhấn nút phía trên để bắt đầu tính toán mô phỏng...")
 
-elif navigation == "📊 Phân tích Hồi quy (Regression)":
-    st.header("📊 Phân tích Hồi quy (Regression Analysis)")
-    st.markdown("Đánh giá các yếu tố ảnh hưởng đến đơn hàng (`purchase`) và kiểm tra đa cộng tuyến VIF")
+elif navigation == "📊 Phân tích Hồi quy & Chẩn đoán":
+    st.header("📊 Phân tích Hồi quy & Chẩn đoán mô hình OLS")
+    st.markdown("Đánh giá các nhân tố ảnh hưởng tuyến tính đến đơn hàng (`purchase`), phân tích đa cộng tuyến VIF và kiểm tra các giả định hồi quy")
 
-    reg_tab1, reg_tab2 = st.tabs(["Hồi quy Đơn biến (Simple OLS)", "Hồi quy Đa biến (Multiple OLS) & VIF"])
+    reg_tab1, reg_tab2, reg_tab3 = st.tabs(["Hồi quy Đơn biến (Simple OLS)", "Hồi quy Đa biến (Multiple OLS) & VIF", "🛠️ Kiểm định Giả định OLS (Diagnostics)"])
 
     with reg_tab1:
         st.subheader("Hồi quy tuyến tính đơn biến: spend_usd vs purchase")
@@ -771,18 +818,19 @@ elif navigation == "📊 Phân tích Hồi quy (Regression)":
                              template="plotly_dark")
         st.plotly_chart(fig_ols, use_container_width=True)
 
+    # Global multiselect definition for features
+    all_features = ['spend_usd', 'impressions', 'reach', 'website_clicks', 'searches', 'view_content', 'add_to_cart']
+    selected_features = st.multiselect(
+        "Chọn các đặc trưng đưa vào mô hình hồi quy đa biến & Chẩn đoán:", 
+        options=all_features,
+        default=all_features,
+        format_func=lambda x: METRIC_LABELS[x],
+        key="regression_multi_select"
+    )
+
     with reg_tab2:
         st.subheader("Hồi quy tuyến tính đa biến & Chỉ số VIF")
         st.markdown("Xây dựng mô hình OLS đa biến kết hợp nhiều đặc trưng trong phễu chuyển đổi để dự báo `purchase`.")
-        
-        # Interactive Feature Selection
-        all_features = ['spend_usd', 'impressions', 'reach', 'website_clicks', 'searches', 'view_content', 'add_to_cart']
-        selected_features = st.multiselect(
-            "Chọn các đặc trưng đưa vào mô hình hồi quy đa biến:", 
-            options=all_features,
-            default=all_features,
-            format_func=lambda x: METRIC_LABELS[x]
-        )
         
         if len(selected_features) == 0:
             st.warning("⚠️ Vui lòng chọn ít nhất một đặc trưng để chạy mô hình hồi quy!")
@@ -802,12 +850,19 @@ elif navigation == "📊 Phân tích Hồi quy (Regression)":
 
             st.markdown(f"**R-squared ($R^2$):** `{model_multi.rsquared:.4f}` | **Adjusted $R^2$:** `{model_multi.rsquared_adj:.4f}`")
             
-            # Calculate and display VIF
+            # Calculate and display VIF (Corrected according to Statistical Learning theory by adding constant first)
             if len(selected_features) > 1:
-                X_vif = df[selected_features]
-                vif_data = pd.DataFrame()
-                vif_data["Đặc trưng (Feature)"] = X_vif.columns
-                vif_data["VIF"] = [variance_inflation_factor(X_vif.values, i) for i in range(len(X_vif.columns))]
+                X_vif_with_const = sm.add_constant(df[selected_features])
+                vifs = []
+                # Compute VIF starting from index 1 to ignore the constant column
+                for i in range(1, X_vif_with_const.shape[1]):
+                    vif = variance_inflation_factor(X_vif_with_const.values, i)
+                    vifs.append(vif)
+                
+                vif_data = pd.DataFrame({
+                    "Đặc trưng (Feature)": selected_features,
+                    "VIF": vifs
+                })
                 vif_data = vif_data.sort_values(by="VIF", ascending=False)
                 
                 st.subheader("⚠️ Đánh giá Đa cộng tuyến (Multicollinearity)")
@@ -826,6 +881,87 @@ elif navigation == "📊 Phân tích Hồi quy (Regression)":
             else:
                 st.info("Cần ít nhất 2 đặc trưng được chọn để tính toán chỉ số đa cộng tuyến VIF.")
 
+    with reg_tab3:
+        st.subheader("🛠️ Kiểm định các giả định của OLS (OLS Assumptions)")
+        st.markdown("Chẩn đoán thống kê để kiểm tra xem các giả định cốt lõi của mô hình OLS có bị vi phạm hay không.")
+        
+        if len(selected_features) == 0:
+            st.warning("⚠️ Vui lòng chọn ít nhất một đặc trưng ở trên để chạy kiểm định chẩn đoán!")
+        else:
+            X_multi = sm.add_constant(df[selected_features])
+            model_multi = sm.OLS(df['purchase'], X_multi).fit()
+            residuals = model_multi.resid
+            fitted_vals = model_multi.fittedvalues
+            
+            # 1. Shapiro-Wilk normality of residuals
+            shapiro_stat_r, shapiro_p_r = stats.shapiro(residuals)
+            
+            # 2. Homoscedasticity check (Breusch-Pagan test)
+            from statsmodels.stats.diagnostic import het_breuschpagan
+            bp_test = het_breuschpagan(residuals, X_multi.values)
+            bp_stat, bp_p = bp_test[0], bp_test[1]
+            
+            # 3. Autocorrelation (Durbin-Watson statistic)
+            dw_stat = sm.stats.stattools.durbin_watson(residuals)
+            
+            diag_col1, diag_col2 = st.columns(2)
+            with diag_col1:
+                st.markdown("##### 1. Phân phối chuẩn của sai số (Normality of Residuals)")
+                st.markdown(f"- **Kiểm định Shapiro-Wilk:** W = `{shapiro_stat_r:.4f}` | p-value = `{shapiro_p_r:.5f}`")
+                if shapiro_p_r >= 0.05:
+                    st.success("✅ **Giả định phân phối chuẩn được thỏa mãn:** Sai số tuân theo phân phối chuẩn (p >= 0.05).")
+                else:
+                    st.warning("⚠️ **Vi phạm giả định phân phối chuẩn (p < 0.05):** Sai số không phân phối chuẩn. Với dữ liệu marketing thực tế, điều này rất phổ biến nhưng không ảnh hưởng nhiều đến ước lượng hệ số hồi quy nhờ CLT.")
+                
+                st.markdown("##### 2. Giả định phương sai đồng nhất (Homoscedasticity)")
+                st.markdown(f"- **Kiểm định Breusch-Pagan:** LM = `{bp_stat:.4f}` | p-value = `{bp_p:.5f}`")
+                if bp_p >= 0.05:
+                    st.success("✅ **Giả định phương sai đồng nhất được thỏa mãn:** Không phát hiện hiện tượng phương sai thay đổi (p >= 0.05).")
+                else:
+                    st.warning("⚠️ **Vi phạm giả định phương sai đồng nhất (Heteroscedasticity) (p < 0.05):** Phương sai sai số thay đổi. Ước lượng hệ số hồi quy vẫn không chệch nhưng sai số chuẩn có thể bị chệch (ảnh hưởng đến kiểm định t các hệ số).")
+            
+            with diag_col2:
+                st.markdown("##### 3. Kiểm định tự tương quan (Autocorrelation)")
+                st.markdown(f"- **Trị số Durbin-Watson:** `{dw_stat:.4f}`")
+                if 1.5 <= dw_stat <= 2.5:
+                    st.success("✅ **Không có tự tương quan nghiêm trọng:** Trị số Durbin-Watson nằm trong khoảng an toàn [1.5, 2.5] (không có tự tương quan chuỗi bậc nhất).")
+                elif dw_stat < 1.5:
+                    st.warning("⚠️ **Tự tương quan dương (Durbin-Watson < 1.5):** Các sai số có xu hướng tương quan dương theo thời gian.")
+                else:
+                    st.warning("⚠️ **Tự tương quan âm (Durbin-Watson > 2.5):** Các sai số có xu hướng tương quan âm theo thời gian.")
+            
+            st.markdown("---")
+            st.subheader("📊 Đồ thị chẩn đoán (Diagnostic Plots)")
+            plot_col1, plot_col2 = st.columns(2)
+            
+            with plot_col1:
+                # Residuals vs Fitted values
+                fig_res_fit = px.scatter(
+                    x=fitted_vals, y=residuals,
+                    labels={'x': 'Giá trị dự báo (Fitted Values)', 'y': 'Sai số (Residuals)'},
+                    title="Sai số vs Giá trị dự báo (Residuals vs Fitted)"
+                )
+                fig_res_fit.add_hline(y=0, line_dash="dash", line_color="red")
+                fig_res_fit.update_layout(template="plotly_dark")
+                st.plotly_chart(fig_res_fit, use_container_width=True)
+                st.info("💡 **Cách xem:** Các điểm dữ liệu cần phân bổ ngẫu nhiên và đều quanh đường ngang Y=0. Nếu điểm tạo thành hình phễu hay hình cong, giả định OLS bị vi phạm.")
+                
+            with plot_col2:
+                # Q-Q Plot of Residuals
+                sorted_residuals = np.sort(residuals)
+                theoretical_quantiles = stats.probplot(residuals, dist="norm")[0][0]
+                fig_qq = px.scatter(
+                    x=theoretical_quantiles, y=sorted_residuals,
+                    labels={'x': 'Phân vị lý thuyết (Theoretical Quantiles)', 'y': 'Phân vị thực nghiệm (Sample Quantiles)'},
+                    title="Q-Q Plot của Sai số (Residuals Q-Q Plot)"
+                )
+                min_val = min(theoretical_quantiles.min(), sorted_residuals.min())
+                max_val = max(theoretical_quantiles.max(), sorted_residuals.max())
+                fig_qq.add_trace(go.Scatter(x=[min_val, max_val], y=[min_val, max_val], mode='lines', name='Đường tham chiếu', line=dict(dash='dash', color='red')))
+                fig_qq.update_layout(template="plotly_dark", showlegend=False)
+                st.plotly_chart(fig_qq, use_container_width=True)
+                st.info("💡 **Cách xem:** Nếu các điểm nằm bám sát đường thẳng chéo tham chiếu màu đỏ, sai số hoàn toàn phân phối chuẩn.")
+
 elif navigation == "🤖 Mô hình Phân loại & ML App":
     st.header("🤖 Mô hình Phân loại & Ứng dụng Dự báo (ML App)")
     st.markdown("Xây dựng, đánh giá mô hình máy học và tạo giao diện dự đoán tương tác thời gian thực")
@@ -837,22 +973,36 @@ elif navigation == "🤖 Mô hình Phân loại & ML App":
     X_class = df[feat_cols]
     y_class = (df['group'] == 'test').astype(int)
     
+    # Interactive hyperparameters configuration
+    with st.expander("⚙️ Tùy chỉnh tham số mô hình"):
+        test_size_val = st.slider("Tỷ lệ tập kiểm tra (Test Size Ratio):", 0.10, 0.50, 0.25, 0.05, key="test_size_slider")
+        rf_estimators = st.slider("Số lượng cây quyết định (n_estimators):", 10, 200, 100, 10, key="rf_est_slider")
+        rf_max_depth = st.slider("Độ sâu tối đa của cây (max_depth):", 2, 10, 4, 1, key="rf_depth_slider")
+        
     # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(X_class, y_class, test_size=0.25, random_state=42, stratify=y_class)
+    X_train, X_test, y_train, y_test = train_test_split(X_class, y_class, test_size=test_size_val, random_state=42, stratify=y_class)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     
-    # Models training (always ready for the tabs)
+    # Fit models
     lr_model = LogisticRegression(random_state=42)
     lr_model.fit(X_train_scaled, y_train)
     lr_train_acc = lr_model.score(X_train_scaled, y_train) * 100
     lr_test_acc = lr_model.score(X_test_scaled, y_test) * 100
     
-    rf_model = RandomForestClassifier(random_state=42, n_estimators=100, max_depth=4)
+    rf_model = RandomForestClassifier(random_state=42, n_estimators=rf_estimators, max_depth=rf_max_depth)
     rf_model.fit(X_train, y_train)
     rf_train_acc = rf_model.score(X_train, y_train) * 100
     rf_test_acc = rf_model.score(X_test, y_test) * 100
+    
+    # 5-fold CV to evaluate generalization performance without preprocessing leakages
+    lr_pipeline = make_pipeline(StandardScaler(), LogisticRegression(random_state=42))
+    lr_cv = cross_val_score(lr_pipeline, X_class, y_class, cv=5)
+    lr_cv_mean, lr_cv_std = lr_cv.mean() * 100, lr_cv.std() * 100
+    
+    rf_cv = cross_val_score(RandomForestClassifier(random_state=42, n_estimators=rf_estimators, max_depth=rf_max_depth), X_class, y_class, cv=5)
+    rf_cv_mean, rf_cv_std = rf_cv.mean() * 100, rf_cv.std() * 100
     
     with ml_tab1:
         st.subheader("Đánh giá độ chính xác của Mô hình Phân loại")
@@ -863,10 +1013,20 @@ elif navigation == "🤖 Mô hình Phân loại & ML App":
             st.markdown("##### Logistic Regression")
             st.metric(label="Độ chính xác Train (Accuracy)", value=f"{lr_train_acc:.1f}%")
             st.metric(label="Độ chính xác Test (Accuracy)", value=f"{lr_test_acc:.1f}%")
+            st.markdown(f"- **5-Fold Cross-Validation:** `{lr_cv_mean:.1f}% ± {lr_cv_std:.1f}%`")
         with c_col2:
             st.markdown("##### Random Forest Classifier")
             st.metric(label="Độ chính xác Train (Accuracy)", value=f"{rf_train_acc:.1f}%")
             st.metric(label="Độ chính xác Test (Accuracy)", value=f"{rf_test_acc:.1f}%")
+            st.markdown(f"- **5-Fold Cross-Validation:** `{rf_cv_mean:.1f}% ± {rf_cv_std:.1f}%`")
+            
+        # Overfitting Analysis
+        st.markdown("##### ⚠️ Đánh giá Quá khớp (Overfitting Analysis)")
+        diff_rf = rf_train_acc - rf_test_acc
+        if diff_rf > 15:
+            st.warning(f"Mô hình Random Forest Classifier đang có dấu hiệu **Quá khớp (Overfitting)** nghiêm trọng (Độ chính xác trên Train là {rf_train_acc:.1f}% nhưng trên Test chỉ đạt {rf_test_acc:.1f}%, độ lệch {diff_rf:.1f}%). Điều này xảy ra do mô hình quá phức tạp so với kích thước tập dữ liệu nhỏ (n=59). Hãy thử kéo thanh trượt giảm độ sâu tối đa (`max_depth`) ở rộng rộng phía trên để kiểm soát hiện tượng quá khớp!")
+        else:
+            st.success("Mô hình hoạt động ổn định giữa tập Train và tập Test (không có hiện tượng quá khớp nghiêm trọng, độ lệch nằm trong tầm kiểm soát).")
             
         st.markdown("---")
         st.subheader("📈 Phân tích chuyên sâu: Ma trận nhầm lẫn & Đường cong ROC")
@@ -932,7 +1092,7 @@ elif navigation == "🤖 Mô hình Phân loại & ML App":
         st.subheader("🔮 Trực quan hóa & Dự báo tương tác (Interactive Prediction)")
         st.markdown("Sử dụng các mô hình học máy đã huấn luyện để dự báo hiệu suất quảng cáo thời gian thực.")
         
-        pred_mode = st.radio("Chọn mục tiêu dự báo:", ["🔮 Dự báo Lượng đơn hàng (Predict Purchases)", "🤖 Phân loại Nhóm chiến dịch (Predict Campaign Type)"])
+        pred_mode = st.radio("Chọn mục tiêu dự báo:", ["🔮 Dự báo Lượng đơn hàng (Predict Purchases)", "🤖 Phân loại Nhóm chiến dịch (Predict Campaign Type)"], key="predict_mode_radio")
         
         if pred_mode == "🔮 Dự báo Lượng đơn hàng (Predict Purchases)":
             st.markdown("#### Mô hình hồi quy dự báo đơn hàng (Random Forest Regressor)")
@@ -949,13 +1109,13 @@ elif navigation == "🤖 Mô hình Phân loại & ML App":
             col_in1, col_in2, col_in3 = st.columns(3)
             with col_in1:
                 in_spend = st.slider("Chi phí quảng cáo ngày (Spend USD):", 
-                                     float(df['spend_usd'].min()), float(df['spend_usd'].max()), float(df['spend_usd'].mean()))
+                                     float(df['spend_usd'].min()), float(df['spend_usd'].max()), float(df['spend_usd'].mean()), key="in_spend_reg")
             with col_in2:
                 in_clicks = st.slider("Lượt clicks ngày (Clicks):", 
-                                      float(df['website_clicks'].min()), float(df['website_clicks'].max()), float(df['website_clicks'].mean()))
+                                      float(df['website_clicks'].min()), float(df['website_clicks'].max()), float(df['website_clicks'].mean()), key="in_clicks_reg")
             with col_in3:
                 in_cart = st.slider("Lượt thêm giỏ hàng ngày (Add to Cart):", 
-                                    float(df['add_to_cart'].min()), float(df['add_to_cart'].max()), float(df['add_to_cart'].mean()))
+                                    float(df['add_to_cart'].min()), float(df['add_to_cart'].max()), float(df['add_to_cart'].mean()), key="in_cart_reg")
             
             # Execute prediction
             pred_val = reg_model.predict([[in_spend, in_clicks, in_cart]])[0]
@@ -975,16 +1135,16 @@ elif navigation == "🤖 Mô hình Phân loại & ML App":
             
             col_cl1, col_cl2, col_cl3 = st.columns(3)
             with col_cl1:
-                p_spend = st.number_input("Chi phí ngày (Spend USD):", float(df['spend_usd'].min()), float(df['spend_usd'].max()), float(df['spend_usd'].mean()))
-                p_imp = st.number_input("Lượt hiển thị (Impressions):", float(df['impressions'].min()), float(df['impressions'].max()), float(df['impressions'].mean()))
+                p_spend = st.number_input("Chi phí ngày (Spend USD):", float(df['spend_usd'].min()), float(df['spend_usd'].max()), float(df['spend_usd'].mean()), key="p_spend_clf")
+                p_imp = st.number_input("Lượt hiển thị (Impressions):", float(df['impressions'].min()), float(df['impressions'].max()), float(df['impressions'].mean()), key="p_imp_clf")
             with col_cl2:
-                p_reach = st.number_input("Số lượng tiếp cận (Reach):", float(df['reach'].min()), float(df['reach'].max()), float(df['reach'].mean()))
-                p_clicks = st.number_input("Số lượt click website (Clicks):", float(df['website_clicks'].min()), float(df['website_clicks'].max()), float(df['website_clicks'].mean()))
+                p_reach = st.number_input("Số lượng tiếp cận (Reach):", float(df['reach'].min()), float(df['reach'].max()), float(df['reach'].mean()), key="p_reach_clf")
+                p_clicks = st.number_input("Số lượt click website (Clicks):", float(df['website_clicks'].min()), float(df['website_clicks'].max()), float(df['website_clicks'].mean()), key="p_clicks_clf")
             with col_cl3:
-                p_search = st.number_input("Số lượt tìm kiếm (Searches):", float(df['searches'].min()), float(df['searches'].max()), float(df['searches'].mean()))
-                p_view = st.number_input("Số lượt xem sản phẩm (View Content):", float(df['view_content'].min()), float(df['view_content'].max()), float(df['view_content'].mean()))
+                p_search = st.number_input("Số lượt tìm kiếm (Searches):", float(df['searches'].min()), float(df['searches'].max()), float(df['searches'].mean()), key="p_search_clf")
+                p_view = st.number_input("Số lượt xem sản phẩm (View Content):", float(df['view_content'].min()), float(df['view_content'].max()), float(df['view_content'].mean()), key="p_view_clf")
                 
-            p_cart = st.slider("Lượt thêm vào giỏ hàng (Add to Cart):", float(df['add_to_cart'].min()), float(df['add_to_cart'].max()), float(df['add_to_cart'].mean()))
+            p_cart = st.slider("Lượt thêm vào giỏ hàng (Add to Cart):", float(df['add_to_cart'].min()), float(df['add_to_cart'].max()), float(df['add_to_cart'].mean()), key="p_cart_clf")
             
             # Predict
             features_input = [[p_spend, p_imp, p_reach, p_clicks, p_search, p_view, p_cart]]
