@@ -205,8 +205,16 @@ control_df = df[df['group'] == 'control'].sort_values('date')
 test_df = df[df['group'] == 'test'].sort_values('date')
 
 # 4. Sidebar Navigation
-st.sidebar.image("https://img.icons8.com/clouds/100/ab-testing.png", width=70)
-st.sidebar.title("A/B Testing Pulse")
+st.sidebar.markdown("""
+<div style="text-align: center; margin-bottom: 10px;">
+    <div style="font-size: 3.5rem; filter: drop-shadow(0 0 12px rgba(79, 70, 229, 0.5)); margin-bottom: 5px; display: inline-block;">
+        ⚡
+    </div>
+    <h2 style="margin: 0; font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        A/B Testing Pulse
+    </h2>
+</div>
+""", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
 navigation = st.sidebar.radio(
