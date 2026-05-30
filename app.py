@@ -356,7 +356,7 @@ if navigation == "🏠 Tổng quan KPI":
     st.markdown("---")
     st.subheader("💡 Nhận xét chi tiết cấp điều hành (Executive Insights)")
     st.info("""
-    - **Tại sao nhóm Control thắng cuộc?** Dù lượng đơn hàng (purchase) trung bình ngày giữa hai nhóm gần như tương đồng (22.8 vs 22.7 đơn/ngày) và không có sự khác biệt về mặt ý nghĩa thống kê (Welch t-test p = 0.945), nhóm **Control** lại tiết kiệm ngân sách đáng kể. Tổng chi tiêu quảng cáo của nhóm Test cao hơn Control **11.24%** dẫn đến chi phí trên một đơn hàng (**CPA**) của nhóm Test bị đội lên **$4.92** so với **$4.41** của Control.
+    - **Tại sao nhóm Control thắng cuộc?** Dù lượng đơn hàng (purchase) trung bình ngày giữa hai nhóm gần như tương đồng (22.8 vs 22.7 đơn/ngày) và không có sự khác biệt về mặt ý nghĩa thống kê (Welch t-test p = 0.945), nhóm **Control** lại tiết kiệm ngân sách đáng kể. Tổng chi tiêu quảng cáo của nhóm Test cao hơn Control **11.24%** dẫn đến chi phí trên một đơn hàng (**CPA**) của nhóm Test bị đội lên **4.92 USD** so với **4.41 USD** của Control.
     - **Cơ chế phân phối của Bidding tự động (Test):** Nhóm **Test** đạt tỷ lệ CTR rất cao (+45.41%) nhờ tập trung quảng cáo vào nhóm đối tượng có tỷ lệ tương tác ban đầu cao. Tuy nhiên, bidding tự động gặp lỗi **đứt gãy chuyển đổi cuối phễu** (giai đoạn Add-to-Cart sang Purchase), khiến cho chi phí tăng thêm không chuyển đổi thành đơn hàng tương xứng.
     """)
 
@@ -1316,7 +1316,7 @@ elif navigation == "📋 Đối chiếu giả thuyết":
         st.markdown("<h4 style='color:#ef4444;'><i class='fa-solid fa-ban'></i> KHÔNG triển khai rộng rãi chiến dịch Test</h4>", unsafe_allow_html=True)
         st.write("""
         Chiến dịch Test không mang lại nhiều đơn hàng hơn nhưng lại tiêu tốn nhiều ngân sách hơn (+11.24%). 
-        Điều này làm tăng chi phí có được một đơn hàng (CPA) từ **$4.41** (Control) lên **$4.92** (Test) - tăng **11.5%** chi phí. 
+        Điều này làm tăng chi phí có được một đơn hàng (CPA) từ **4.41 USD** (Control) lên **4.92 USD** (Test) - tăng **11.5%** chi phí. 
         Nếu triển khai toàn bộ, ROI tổng thể sẽ sụt giảm.
         """)
         
