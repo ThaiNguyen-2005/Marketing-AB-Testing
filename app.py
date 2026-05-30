@@ -249,11 +249,22 @@ st.sidebar.markdown(f"**Control (Đối chứng):** 29 ngày  \n<span class='bad
 st.sidebar.markdown(f"**Test (Thử nghiệm):** 30 ngày  \n<span class='badge-test'>Bidding tự động</span>", unsafe_allow_html=True)
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("""
-<div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+# Load avatar image
+try:
+    import base64
+    with open("thai.jpg", "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode()
+    avatar_html = f'<img src="data:image/jpeg;base64,{encoded_image}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />'
+except Exception:
+    avatar_html = """
     <div style="width: 40px; height: 40px; border-radius: 50%; background-color: rgba(128, 128, 128, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
         👤
     </div>
+    """
+
+st.sidebar.markdown(f"""
+<div style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+    {avatar_html}
     <div style="display: flex; flex-direction: column;">
         <span style="font-size: 0.9rem; font-weight: 600; color: var(--text-color);">Nguyễn Trần Bảo Thái</span>
         <span style="font-size: 0.75rem; color: var(--text-color); opacity: 0.65;">Data Analyst</span>
