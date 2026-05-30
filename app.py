@@ -364,7 +364,7 @@ elif navigation == "📈 Phân tích Chuỗi thời gian":
     st.header("📈 Phân tích Chuỗi thời gian & Biến động")
     st.markdown("Khai thác trục thời gian của chiến dịch để theo dõi tính ổn định và sự phát triển lũy kế")
     
-    time_tab1, time_tab2, time_tab3 = st.tabs(["Biến động hàng ngày", "Tỷ lệ chuyển đổi theo thời gian", "Đồ thị Lũy kế (Cumulative Charts)"])
+    time_tab1, time_tab2, time_tab3, time_tab4 = st.tabs(["Biến động hàng ngày", "Phân phối & Tương quan (Boxplot & Scatter)", "Tỷ lệ chuyển đổi theo thời gian", "Đồ thị Lũy kế (Cumulative Charts)"])
     
     with time_tab1:
         st.subheader("Theo dõi chỉ số hàng ngày")
@@ -399,6 +399,37 @@ elif navigation == "📈 Phân tích Chuỗi thời gian":
         st.plotly_chart(fig_line, use_container_width=True)
         
     with time_tab2:
+        st.subheader("Phân phối & Tương quan dữ liệu (Boxplot & Scatter)")
+        st.markdown("Xem phân phối tần suất qua biểu đồ Boxplot và phân tích tương quan tuyến tính qua Scatter Plot.")
+        
+        selected_metric_dist = st.selectbox(
+            "Chọn chỉ số để xem phân phối Boxplot:", 
+            ["purchase", "spend_usd", "website_clicks", "impressions"], 
+            format_func=lambda x: METRIC_LABELS[x], 
+            key="time_series_boxplot"
+        )
+        
+        col_dist1, col_dist2 = st.columns(2)
+        with col_dist1:
+            fig_box = px.box(
+                df, x='group', y=selected_metric_dist, color='group',
+                color_discrete_map={'control': '#3b82f6', 'test': '#ff6f43'},
+                title=f"Phân phối của {METRIC_LABELS[selected_metric_dist]} giữa 2 nhóm"
+            )
+            fig_box.update_layout(template="plotly_dark", showlegend=False)
+            st.plotly_chart(fig_box, use_container_width=True)
+            
+        with col_dist2:
+            fig_scatter = px.scatter(
+                df, x='spend_usd', y='purchase', color='group',
+                color_discrete_map={'control': '#3b82f6', 'test': '#ff6f43'},
+                trendline="ols",
+                title="Chi phí quảng cáo (Spend) vs Đơn hàng (Purchases)"
+            )
+            fig_scatter.update_layout(template="plotly_dark")
+            st.plotly_chart(fig_scatter, use_container_width=True)
+            
+    with time_tab3:
         st.subheader("Tỷ lệ chuyển đổi hàng ngày (Daily Conversion Rate)")
         st.markdown("Tỷ lệ chuyển đổi được tính bằng: $\\text{{CR}} = \\frac{\\text{{Lượt đơn hàng (Purchases)}}}{\\text{{Lượt click website (Clicks)}}} \\times 100$")
         
@@ -427,7 +458,7 @@ elif navigation == "📈 Phân tích Chuỗi thời gian":
         )
         st.plotly_chart(fig_cr, use_container_width=True)
         
-    with time_tab3:
+    with time_tab4:
         st.subheader("Hiệu số tích lũy của hai chiến dịch (Cumulative Performance)")
         st.markdown("Xem biểu đồ lũy kế giúp loại bỏ biến động nhiễu hàng ngày để thấy rõ xu hướng chênh lệch dài hạn.")
         
@@ -438,7 +469,8 @@ elif navigation == "📈 Phân tích Chuỗi thời gian":
                 "purchase": "Đơn hàng lũy kế (Cumulative Purchases)",
                 "spend_usd": "Chi phí lũy kế (Cumulative Spend USD)",
                 "website_clicks": "Lượt click lũy kế (Cumulative Clicks)"
-            }[x]
+            }[x],
+            key="time_series_cum"
         )
         
         fig_cum = go.Figure()
