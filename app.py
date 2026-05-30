@@ -34,27 +34,32 @@ st.markdown("""
     
     /* Premium style for stMetric */
     div[data-testid="stMetric"] {
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 20px 24px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        transition: all 0.3s ease-in-out;
+        background: #111827 !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 16px !important;
+        padding: 20px 24px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        transition: all 0.3s ease-in-out !important;
     }
     div[data-testid="stMetric"]:hover {
-        background: rgba(255, 255, 255, 0.04);
-        border-color: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.25);
-        transform: translateY(-3px);
+        background: #1f2937 !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.3) !important;
+        transform: translateY(-3px) !important;
     }
-    div[data-testid="stMetricValue"] {
+    div[data-testid="stMetricValue"],
+    div[data-testid="stMetricValue"] * {
         font-size: 28px !important;
         font-weight: 700 !important;
-        background: linear-gradient(90deg, #3b82f6, #6366f1);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: #ffffff !important;
+        background: transparent !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+    div[data-testid="stMetricLabel"],
+    div[data-testid="stMetricLabel"] * {
+        color: #9ca3af !important;
     }
     
     /* KPI Card Style CSS */
@@ -330,7 +335,7 @@ if navigation == "🏠 Tổng quan KPI":
     with col1:
         st.metric(
             label="Chi phí quảng cáo trung bình",
-            value=f"${c_means['spend_usd']:,.0f} vs ${t_means['spend_usd']:,.0f}",
+            value=f"\\${c_means['spend_usd']:,.0f} vs \\${t_means['spend_usd']:,.0f}",
             delta=f"{pct_diffs['spend_usd']:.2f}% (Test vs Control)"
         )
     with col2:
@@ -356,7 +361,7 @@ if navigation == "🏠 Tổng quan KPI":
     st.markdown("---")
     st.subheader("💡 Nhận xét chi tiết cấp điều hành (Executive Insights)")
     st.info("""
-    - **Tại sao nhóm Control thắng cuộc?** Dù lượng đơn hàng (purchase) trung bình ngày giữa hai nhóm gần như tương đồng (22.8 vs 22.7 đơn/ngày) và không có sự khác biệt về mặt ý nghĩa thống kê (Welch t-test p = 0.945), nhóm **Control** lại tiết kiệm ngân sách đáng kể. Tổng chi tiêu quảng cáo của nhóm Test cao hơn Control **11.24%** dẫn đến chi phí trên một đơn hàng (**CPA**) của nhóm Test bị đội lên **4.92 USD** so với **4.41 USD** của Control.
+    - **Tại sao nhóm Control thắng cuộc?** Dù lượng đơn hàng (purchase) trung bình ngày giữa hai nhóm gần như tương đồng (522.8 vs 521.2 đơn/ngày) và không có sự khác biệt về mặt ý nghĩa thống kê (Welch t-test p = 0.976), nhóm **Control** lại tiết kiệm ngân sách đáng kể. Tổng chi tiêu quảng cáo của nhóm Test cao hơn Control **11.24%** dẫn đến chi phí trên một đơn hàng (**CPA**) của nhóm Test bị đội lên **4.92 USD** so với **4.41 USD** của Control.
     - **Cơ chế phân phối của Bidding tự động (Test):** Nhóm **Test** đạt tỷ lệ CTR rất cao (+45.41%) nhờ tập trung quảng cáo vào nhóm đối tượng có tỷ lệ tương tác ban đầu cao. Tuy nhiên, bidding tự động gặp lỗi **đứt gãy chuyển đổi cuối phễu** (giai đoạn Add-to-Cart sang Purchase), khiến cho chi phí tăng thêm không chuyển đổi thành đơn hàng tương xứng.
     """)
 
@@ -1288,7 +1293,7 @@ elif navigation == "📋 Đối chiếu giả thuyết":
     st.error("❌ **1. Giả thuyết về số lượng đơn hàng (Purchases - KPI chính)**")
     st.markdown("""
     - **Thiết lập:** $H_0: \\mu_{C, purchase} = \\mu_{T, purchase}$ vs $H_1: \\mu_{C, purchase} \\neq \\mu_{T, purchase}$
-    - **Kết quả kiểm định:** Welch's t-test $p = 0.9449 \\ge 0.05$. Thất bại bác bỏ H₀.
+    - **Kết quả kiểm định:** Welch's t-test $p = 0.9760 \\ge 0.05$. Thất bại bác bỏ H₀.
     - **Kết luận:** Chiến dịch Test mới (bidding tự động) KHÔNG làm thay đổi số lượng đơn hàng trung bình ngày một cách có ý nghĩa thống kê.
     """)
     
@@ -1296,15 +1301,23 @@ elif navigation == "📋 Đối chiếu giả thuyết":
     st.success("✅ **2. Giả thuyết về chi phí quảng cáo (Daily Spend)**")
     st.markdown("""
     - **Thiết lập:** $H_0: \\mu_{C, spend} = \\mu_{T, spend}$ vs $H_1: \\mu_{C, spend} \\neq \\mu_{T, spend}$
-    - **Kết quả kiểm định:** Welch's t-test $p = 0.0115 < 0.05$. Bác bỏ H₀, chấp nhận H₁.
+    - **Kết quả kiểm định:** Welch's t-test $p = 0.0071 < 0.05$. Bác bỏ H₀, chấp nhận H₁.
     - **Kết luận:** Chi phí trung bình ngày của nhóm Test cao hơn nhóm Control một cách có hệ thống (tăng khoảng 11.24%).
     """)
     
     # Hypothesis 3
     st.error("❌ **3. Giả thuyết về lượt click website (Clicks)**")
     st.markdown("""
-    - **Thiết lập:** Welch's t-test $p = 0.8927 \\ge 0.05$. Thất bại bác bỏ H₀.
+    - **Thiết lập:** Welch's t-test $p = 0.1205 \\ge 0.05$. Thất bại bác bỏ H₀.
     - **Kết luận:** Tăng ngân sách ở nhóm Test không làm tăng lượng click website trung bình ngày có ý nghĩa thống kê.
+    """)
+    
+    # Hypothesis 4
+    st.success("✅ **4. Giả thuyết về tương tác thêm giỏ hàng (Add to Cart)**")
+    st.markdown("""
+    - **Thiết lập:** $H_0: \\mu_{C, cart} = \\mu_{T, cart}$ vs $H_1: \\mu_{C, cart} \\neq \\mu_{T, cart}$
+    - **Kết quả kiểm định:** Welch's t-test $p = 0.0001 < 0.05$. Bác bỏ H₀, chấp nhận H₁.
+    - **Kết luận:** Lượt thêm vào giỏ hàng trung bình ngày của nhóm Test giảm mạnh một cách có ý nghĩa thống kê (giảm khoảng 32.19%).
     """)
     
     st.markdown("---")
